@@ -1,16 +1,12 @@
 import { Injectable } from '@angular/core';
 import { from, map, Observable } from 'rxjs';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseService } from './supabase.service';
 import { AttendanceRecord, CheckInStatus } from '../models/models';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
-  private supabase: SupabaseClient;
-
-  constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
-  }
+  constructor(private supabaseSvc: SupabaseService) {}
 
   /**
    * Retrieve raw check‑in rows for an employee. 
@@ -18,7 +14,7 @@ export class AttendanceService {
   getHistory(empId: string): Observable<CheckInStatus[]> {
     const id = empId.trim().toUpperCase();
     return from(
-      this.supabase
+      this.supabaseSvc.supabase
         .from('attendance_records')
         .select('*')
         .eq('empId', id)
@@ -34,7 +30,7 @@ export class AttendanceService {
   getToday(): Observable<CheckInStatus[]> {
     const today = new Date().toISOString().split('T')[0];
     return from(
-      this.supabase
+      this.supabaseSvc.supabase
         .from('attendance_records')
         .select('*')
         .gte('checkInTime', `${today}T00:00:00`)
@@ -55,7 +51,7 @@ export class AttendanceService {
       checkOutTime: status.state === 'out' ? new Date().toISOString() : status.checkOutTime
     };
     return from(
-      this.supabase.from('attendance_records').upsert([record]).select().single()
+      this.supabaseSvc.supabase.from('attendance_records').upsert([record]).select().single()
     ).pipe(
       map(({ data }) => data as CheckInStatus)
     );

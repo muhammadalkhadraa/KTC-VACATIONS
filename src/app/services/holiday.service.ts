@@ -1,17 +1,14 @@
 import { Injectable } from '@angular/core';
 import { catchError, from, map, Observable, of, tap } from 'rxjs';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseService } from './supabase.service';
 import { HolidayRequest } from '../models/models';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class HolidayService {
-  private supabase: SupabaseClient;
   private cache = new Map<string, HolidayRequest[]>();
 
-  constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
-  }
+  constructor(private supabaseSvc: SupabaseService) {}
 
   getForEmployee(empId: string): Observable<HolidayRequest[]> {
     if (!empId) return of([]);
@@ -19,7 +16,7 @@ export class HolidayService {
     const cached = this.cache.get(id);
 
     return from(
-      this.supabase.from('holiday_requests').select('*').eq('empId', id).order('submittedAt', { ascending: false })
+      this.supabaseSvc.supabase.from('holiday_requests').select('*').eq('empId', id).order('submittedAt', { ascending: false })
     ).pipe(
       map(({ data }) => {
         const reqs = (data || []) as HolidayRequest[];
@@ -39,7 +36,7 @@ export class HolidayService {
       managerStatus: 'pending',
       gmStatus: 'pending'
     };
-    return from(this.supabase.from('holiday_requests').insert([newReq]).select().single()).pipe(
+    return from(this.supabaseSvc.supabase.from('holiday_requests').insert([newReq]).select().single()).pipe(
       map(({ data }) => {
         const created = data as HolidayRequest;
         const id = created.empId.toUpperCase();
@@ -52,13 +49,13 @@ export class HolidayService {
 
   // admin helpers
   getAll(): Observable<HolidayRequest[]> {
-    return from(this.supabase.from('holiday_requests').select('*').order('submittedAt', { ascending: false })).pipe(
+    return from(this.supabaseSvc.supabase.from('holiday_requests').select('*').order('submittedAt', { ascending: false })).pipe(
       map(({ data }) => (data || []) as HolidayRequest[])
     );
   }
 
   getPending(role?: string): Observable<HolidayRequest[]> {
-    let query = this.supabase.from('holiday_requests').select('*').eq('status', 'pending');
+    let query = this.supabaseSvc.supabase.from('holiday_requests').select('*').eq('status', 'pending');
 
     if (role === 'manager') {
       query = query.eq('managerStatus', 'pending');
@@ -82,7 +79,7 @@ export class HolidayService {
       update.status = 'approved'; 
     }
 
-    return from(this.supabase.from('holiday_requests').update(update).eq('requestId', id).select().single()).pipe(
+    return from(this.supabaseSvc.supabase.from('holiday_requests').update(update).eq('requestId', id).select().single()).pipe(
       map(({ data }) => data as HolidayRequest)
     );
   }
@@ -97,7 +94,7 @@ export class HolidayService {
       update.gmId = approverId;
     }
 
-    return from(this.supabase.from('holiday_requests').update(update).eq('requestId', id).select().single()).pipe(
+    return from(this.supabaseSvc.supabase.from('holiday_requests').update(update).eq('requestId', id).select().single()).pipe(
       map(({ data }) => data as HolidayRequest)
     );
   }

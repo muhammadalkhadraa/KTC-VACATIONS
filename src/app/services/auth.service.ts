@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, from, map, of, tap } from 'rxjs';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { BehaviorSubject, catchError, from, map, Observable, of, tap } from 'rxjs';
+import { SupabaseService } from './supabase.service';
 import { Employee, RegisterRequest } from '../models/models';
-import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -30,10 +29,7 @@ export class AuthService {
     return this.isManager || this.isGeneralManager;
   }
 
-  private supabase: SupabaseClient;
-
-  constructor() {
-    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+  constructor(private supabaseSvc: SupabaseService) {
     const saved = localStorage.getItem(this.STORAGE_KEY);
     if (saved) {
       try {
@@ -55,7 +51,7 @@ export class AuthService {
   login(id: string, password: string) {
     const empId = id.trim().toUpperCase();
     return from(
-      this.supabase
+      this.supabaseSvc.supabase
         .from('employees')
         .select('*')
         .eq('id', empId)
@@ -102,33 +98,33 @@ export class AuthService {
       usedHolidays: 0,
       joined: new Date().toISOString().split('T')[0]
     };
-    return from(this.supabase.from('employees').insert([emp]));
+    return from(this.supabaseSvc.supabase.from('employees').insert([emp]));
   }
 
   getEmployeeById(id: string) {
     const empId = id.trim().toUpperCase();
-    return from(this.supabase.from('employees').select('*').eq('id', empId).single()).pipe(
+    return from(this.supabaseSvc.supabase.from('employees').select('*').eq('id', empId).single()).pipe(
       map(({ data }) => data as Employee)
     );
   }
 
   /** Retrieve the list of users (admin feature). */
   getAllEmployees() {
-    return from(this.supabase.from('employees').select('*')).pipe(
+    return from(this.supabaseSvc.supabase.from('employees').select('*')).pipe(
       map(({ data }) => (data || []) as Employee[])
     );
   }
 
   updateUserRole(empId: string, role: string) {
     const id = empId.trim().toUpperCase();
-    return from(this.supabase.from('employees').update({ role }).eq('id', id).select().single()).pipe(
+    return from(this.supabaseSvc.supabase.from('employees').update({ role }).eq('id', id).select().single()).pipe(
       map(({ data }) => data as Employee)
     );
   }
 
   updateUserPosition(empId: string, position: string) {
     const id = empId.trim().toUpperCase();
-    return from(this.supabase.from('employees').update({ position }).eq('id', id).select().single()).pipe(
+    return from(this.supabaseSvc.supabase.from('employees').update({ position }).eq('id', id).select().single()).pipe(
       map(({ data }) => data as Employee)
     );
   }
@@ -136,7 +132,7 @@ export class AuthService {
   /** Update used holidays after an approval */
   addUsedHolidays(empId: string, days: number) {
     const id = empId.trim().toUpperCase();
-    return from(this.supabase.rpc('increment_used_holidays', { emp_id: id, days_count: days }));
+    return from(this.supabaseSvc.supabase.rpc('increment_used_holidays', { emp_id: id, days_count: days }));
   }
 
   /** Update local user state from a full employee object */

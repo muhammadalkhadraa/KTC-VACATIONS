@@ -6,7 +6,9 @@ import { environment } from '../../environments/environment';
   providedIn: 'root',
 })
 export class SupabaseService {
-  private supabase: SupabaseClient;
+  /** The shared Supabase client instance. */
+  public readonly supabase: SupabaseClient;
+
   constructor() {
     this.supabase = createClient(
       environment.supabaseUrl,
@@ -14,6 +16,9 @@ export class SupabaseService {
     );
   }
 
+  /**
+   * Optional helper to check connection or table existence.
+   */
   getTodos() {
     return this.supabase.from('todos').select('*');
   }
