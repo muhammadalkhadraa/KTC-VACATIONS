@@ -86,52 +86,60 @@ export class AuthService {
     localStorage.removeItem(this.STORAGE_KEY);
   }
 
-  register(data: RegisterRequest) {
-    const emp = {
-      id: data.id.trim().toUpperCase(),
-      name: data.name,
-      password: data.password,
-      department: data.department,
-      position: data.position,
-      role: 'employee',
-      totalHolidays: 21,
-      usedHolidays: 0,
-      joined: new Date().toISOString().split('T')[0]
+  register(emp: Partial<Employee>) {
+    const newEmp = {
+      Id: emp.id,
+      Name: emp.name,
+      Department: emp.department,
+      Position: emp.position,
+      Joined: new Date().toISOString().split('T')[0],
+      TotalHolidays: 21,
+      UsedHolidays: 0
     };
-    return from(this.supabaseSvc.supabase.from('employees').insert([emp]));
+    return from(this.supabaseSvc.supabase.from('employee').insert([newEmp]));
   }
 
-  getEmployeeById(id: string) {
-    const empId = id.trim().toUpperCase();
-    return from(this.supabaseSvc.supabase.from('employees').select('*').eq('id', empId).single()).pipe(
-      map(({ data }) => data as Employee)
+  getEmployeeById(empId: string) {
+    return from(
+      this.supabaseSvc.supabase
+        .from('employee')
+        .select('Id:id, Name:name, Department:department, Position:position, Joined:joined, TotalHolidays:totalHolidays, UsedHolidays:usedHolidays, Password:password, Role:role')
+        .eq('Id', empId)
+        .single()
+    ).pipe(
+      map(({ data }) => data as unknown as Employee)
     );
   }
 
   /** Retrieve the list of users (admin feature). */
   getAllEmployees() {
-    return from(this.supabaseSvc.supabase.from('employees').select('*')).pipe(
-      map(({ data }) => (data || []) as Employee[])
+    return from(
+      this.supabaseSvc.supabase
+        .from('employee')
+        .select('Id:id, Name:name, Department:department, Position:position, Joined:joined, TotalHolidays:totalHolidays, UsedHolidays:usedHolidays, Password:password, Role:role')
+    ).pipe(
+      map(({ data }) => (data || []) as unknown as Employee[])
     );
   }
 
   updateUserRole(empId: string, role: string) {
     const id = empId.trim().toUpperCase();
-    return from(this.supabaseSvc.supabase.from('employees').update({ role }).eq('id', id).select().single()).pipe(
-      map(({ data }) => data as Employee)
+    return from(this.supabaseSvc.supabase.from('employee').update({ Role: role }).eq('Id', id).select('Id:id, Role:role').single()).pipe(
+      map(({ data }) => data as unknown as Employee)
     );
   }
 
   updateUserPosition(empId: string, position: string) {
     const id = empId.trim().toUpperCase();
-    return from(this.supabaseSvc.supabase.from('employees').update({ position }).eq('id', id).select().single()).pipe(
-      map(({ data }) => data as Employee)
+    return from(this.supabaseSvc.supabase.from('employee').update({ Position: position }).eq('Id', id).select('Id:id, Position:position').single()).pipe(
+      map(({ data }) => data as unknown as Employee)
     );
   }
 
   /** Update used holidays after an approval */
   addUsedHolidays(empId: string, days: number) {
     const id = empId.trim().toUpperCase();
+    // Assuming the RPC function is named 'increment_used_holidays' and its parameter names match the DB schema.
     return from(this.supabaseSvc.supabase.rpc('increment_used_holidays', { emp_id: id, days_count: days }));
   }
 

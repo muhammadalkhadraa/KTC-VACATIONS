@@ -10,16 +10,18 @@ export class HolidayService {
 
   constructor(private supabaseSvc: SupabaseService) {}
 
+  private readonly SELECT_ALL = 'RequestId:requestId, EmpId:empId, EmpName:empName, StartDate:startDate, EndDate:endDate, Days:days, Reason:reason, Status:status, ManagerStatus:managerStatus, ManagerId:managerId, GmStatus:gmStatus, GmId:gmId, SubmittedAt:submittedAt';
+
   getForEmployee(empId: string): Observable<HolidayRequest[]> {
     if (!empId) return of([]);
     const id = String(empId).trim().toUpperCase();
     const cached = this.cache.get(id);
 
     return from(
-      this.supabaseSvc.supabase.from('holiday_requests').select('*').eq('empId', id).order('submittedAt', { ascending: false })
+      this.supabaseSvc.supabase.from('holiday_requests').select(this.SELECT_ALL).eq('EmpId', id).order('SubmittedAt', { ascending: false })
     ).pipe(
       map(({ data }) => {
-        const reqs = (data || []) as HolidayRequest[];
+        const reqs = (data as unknown as HolidayRequest[]) || [];
         if (!reqs.length && cached) return cached;
         this.cache.set(id, reqs);
         return reqs;
@@ -30,15 +32,20 @@ export class HolidayService {
 
   submit(req: Partial<HolidayRequest>): Observable<HolidayRequest> {
     const newReq = {
-      ...req,
-      submittedAt: new Date().toISOString(),
-      status: 'pending',
-      managerStatus: 'pending',
-      gmStatus: 'pending'
+      EmpId: req.empId,
+      EmpName: req.empName,
+      StartDate: req.startDate,
+      EndDate: req.endDate,
+      Days: req.days,
+      Reason: req.reason,
+      SubmittedAt: new Date().toISOString(),
+      Status: 'pending',
+      ManagerStatus: 'pending',
+      GmStatus: 'pending'
     };
-    return from(this.supabaseSvc.supabase.from('holiday_requests').insert([newReq]).select().single()).pipe(
+    return from(this.supabaseSvc.supabase.from('holiday_requests').insert([newReq]).select(this.SELECT_ALL).single()).pipe(
       map(({ data }) => {
-        const created = data as HolidayRequest;
+        const created = data as unknown as HolidayRequest;
         const id = created.empId.toUpperCase();
         const existing = this.cache.get(id) ?? [];
         this.cache.set(id, [...existing, created]);
@@ -49,53 +56,53 @@ export class HolidayService {
 
   // admin helpers
   getAll(): Observable<HolidayRequest[]> {
-    return from(this.supabaseSvc.supabase.from('holiday_requests').select('*').order('submittedAt', { ascending: false })).pipe(
-      map(({ data }) => (data || []) as HolidayRequest[])
+    return from(this.supabaseSvc.supabase.from('holiday_requests').select(this.SELECT_ALL).order('SubmittedAt', { ascending: false })).pipe(
+      map(({ data }) => (data as unknown as HolidayRequest[]) || [])
     );
   }
 
   getPending(role?: string): Observable<HolidayRequest[]> {
-    let query = this.supabaseSvc.supabase.from('holiday_requests').select('*').eq('status', 'pending');
+    let query = this.supabaseSvc.supabase.from('holiday_requests').select(this.SELECT_ALL).eq('Status', 'pending');
 
     if (role === 'manager') {
-      query = query.eq('managerStatus', 'pending');
+      query = query.eq('ManagerStatus', 'pending');
     } else if (role === 'general manager') {
-      query = query.eq('managerStatus', 'approved').eq('gmStatus', 'pending');
+      query = query.eq('ManagerStatus', 'approved').eq('GmStatus', 'pending');
     }
 
-    return from(query.order('submittedAt', { ascending: false })).pipe(
-      map(({ data }) => (data || []) as HolidayRequest[])
+    return from(query.order('SubmittedAt', { ascending: false })).pipe(
+      map(({ data }) => (data as unknown as HolidayRequest[]) || [])
     );
   }
 
   approve(id: number, approverId: string, approverRole: string): Observable<HolidayRequest> {
     const update: any = {};
     if (approverRole === 'manager') {
-      update.managerStatus = 'approved';
-      update.managerId = approverId;
+      update.ManagerStatus = 'approved';
+      update.ManagerId = approverId;
     } else if (approverRole === 'general manager') {
-      update.gmStatus = 'approved';
-      update.gmId = approverId;
-      update.status = 'approved'; 
+      update.GmStatus = 'approved';
+      update.GmId = approverId;
+      update.Status = 'approved'; 
     }
 
-    return from(this.supabaseSvc.supabase.from('holiday_requests').update(update).eq('requestId', id).select().single()).pipe(
-      map(({ data }) => data as HolidayRequest)
+    return from(this.supabaseSvc.supabase.from('holiday_requests').update(update).eq('RequestId', id).select(this.SELECT_ALL).single()).pipe(
+      map(({ data }) => data as unknown as HolidayRequest)
     );
   }
 
   reject(id: number, approverId: string, approverRole: string): Observable<HolidayRequest> {
-    const update: any = { status: 'rejected' };
+    const update: any = { Status: 'rejected' };
     if (approverRole === 'manager') {
-      update.managerStatus = 'rejected';
-      update.managerId = approverId;
+      update.ManagerStatus = 'rejected';
+      update.ManagerId = approverId;
     } else if (approverRole === 'general manager') {
-      update.gmStatus = 'rejected';
-      update.gmId = approverId;
+      update.GmStatus = 'rejected';
+      update.GmId = approverId;
     }
 
-    return from(this.supabaseSvc.supabase.from('holiday_requests').update(update).eq('requestId', id).select().single()).pipe(
-      map(({ data }) => data as HolidayRequest)
+    return from(this.supabaseSvc.supabase.from('holiday_requests').update(update).eq('RequestId', id).select(this.SELECT_ALL).single()).pipe(
+      map(({ data }) => data as unknown as HolidayRequest)
     );
   }
 }

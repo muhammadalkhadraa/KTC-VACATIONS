@@ -11,16 +11,18 @@ export class AttendanceService {
   /**
    * Retrieve raw check‑in rows for an employee. 
    */
+  private readonly SELECT_ALL = 'Id:id, EmpId:empId, State:state, CheckInTime:checkInTime, CheckOutTime:checkOutTime';
+
   getHistory(empId: string): Observable<CheckInStatus[]> {
     const id = empId.trim().toUpperCase();
     return from(
       this.supabaseSvc.supabase
-        .from('attendance_records')
-        .select('*')
-        .eq('empId', id)
-        .order('checkInTime', { ascending: false })
+        .from('Attendance')
+        .select(this.SELECT_ALL)
+        .eq('EmpId', id)
+        .order('CheckInTime', { ascending: false })
     ).pipe(
-      map(({ data }) => (data || []) as CheckInStatus[])
+      map(({ data }) => (data as unknown as CheckInStatus[]) || [])
     );
   }
 
@@ -31,12 +33,12 @@ export class AttendanceService {
     const today = new Date().toISOString().split('T')[0];
     return from(
       this.supabaseSvc.supabase
-        .from('attendance_records')
-        .select('*')
-        .gte('checkInTime', `${today}T00:00:00`)
-        .lte('checkInTime', `${today}T23:59:59`)
+        .from('Attendance')
+        .select(this.SELECT_ALL)
+        .gte('CheckInTime', `${today}T00:00:00`)
+        .lte('CheckInTime', `${today}T23:59:59`)
     ).pipe(
-      map(({ data }) => (data || []) as CheckInStatus[])
+      map(({ data }) => (data as unknown as CheckInStatus[]) || [])
     );
   }
 
@@ -45,15 +47,15 @@ export class AttendanceService {
    */
   postStatus(status: Partial<CheckInStatus>): Observable<CheckInStatus> {
     const record = {
-      ...status,
-      empId: status.empId?.trim().toUpperCase(),
-      checkInTime: status.state === 'in' ? new Date().toISOString() : status.checkInTime,
-      checkOutTime: status.state === 'out' ? new Date().toISOString() : status.checkOutTime
+      EmpId: status.empId?.trim().toUpperCase(),
+      State: status.state,
+      CheckInTime: status.state === 'in' ? new Date().toISOString() : status.checkInTime,
+      CheckOutTime: status.state === 'out' ? new Date().toISOString() : status.checkOutTime
     };
     return from(
-      this.supabaseSvc.supabase.from('attendance_records').upsert([record]).select().single()
+      this.supabaseSvc.supabase.from('Attendance').upsert([record]).select(this.SELECT_ALL).single()
     ).pipe(
-      map(({ data }) => data as CheckInStatus)
+      map(({ data }) => data as unknown as CheckInStatus)
     );
   }
 
