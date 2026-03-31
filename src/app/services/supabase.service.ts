@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 
@@ -9,11 +9,15 @@ export class SupabaseService {
   /** The shared Supabase client instance. */
   public readonly supabase: SupabaseClient;
 
-  constructor() {
-    this.supabase = createClient(
-      environment.supabaseUrl,
-      environment.supabaseKey
-    );
+  constructor(private ngZone: NgZone) {
+    // We run the initialization outside sub-Angular zones to prevent
+    // conflicts with Navigator LockManager (WebView Locks API)
+    this.supabase = this.ngZone.runOutsideAngular(() => {
+      return createClient(
+        environment.supabaseUrl,
+        environment.supabaseKey
+      );
+    });
   }
 
   /**
