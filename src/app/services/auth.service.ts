@@ -25,14 +25,9 @@ export class AuthService {
     return this._currentUser.value?.position?.toLowerCase() === 'general manager';
   }
 
-  /** True if user is a system administrator */
-  get isSystemAdmin(): boolean {
-    return this._currentUser.value?.role?.toLowerCase() === 'admin';
-  }
-
-  /** True if user can approve requests or manage the system */
-  get hasApprovalRights(): boolean {
-    return this.isManager || this.isGeneralManager || this.isSystemAdmin;
+  /** True if either manager or general manager (can access admin panel) */
+  get isAdmin(): boolean {
+    return this.isManager || this.isGeneralManager;
   }
 
   private apiUrl = environment.apiUrl;
@@ -57,7 +52,7 @@ export class AuthService {
   }
 
   login(id: string, password: string) {
-    return this.http.post<{id: string, name: string, position: string, role: string}>(
+    return this.http.post<{id: string, name: string, position: string}>(
         `${this.apiUrl}/auth/login`, { id, password })
       .pipe(
         tap(res => {
@@ -71,7 +66,7 @@ export class AuthService {
             totalHolidays: 0,
             usedHolidays: 0,
             password: '',
-            role: res.role ? res.role.toString().trim().toLowerCase() : 'employee'
+            role: 'employee'
           };
           this._currentUser.next(emp);
           localStorage.setItem(this.STORAGE_KEY, JSON.stringify(emp));

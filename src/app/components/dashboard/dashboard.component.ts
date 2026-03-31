@@ -34,7 +34,7 @@ import { DataStoreService } from '../../services/data-store.service';
       <h1 class="page-title">Good Morning, <span>{{ firstName }}</span> 👋</h1>
 
       <!-- ─── EMPLOYEE DASHBOARD ─── -->
-      <ng-container *ngIf="!hasApprovalRights">
+      <ng-container *ngIf="!isAdmin">
         <!-- Stats -->
         <div class="stats-grid">
           <div class="stat-card green">
@@ -103,7 +103,7 @@ import { DataStoreService } from '../../services/data-store.service';
       </ng-container>
 
       <!-- ─── ADMIN DASHBOARD ─── -->
-      <ng-container *ngIf="hasApprovalRights">
+      <ng-container *ngIf="isAdmin">
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-num">{{ totalEmployees }}</div>
@@ -179,7 +179,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     public store: DataStoreService
   ) {}
 
-  get hasApprovalRights()      { return this.auth.hasApprovalRights; }
+  get isAdmin()      { return this.auth.isAdmin; }
   get firstName()    { return this.auth.currentUser?.name.split(' ')[0] ?? ''; }
   totalEmployees = 0;
   allEmployees: Employee[] = [];

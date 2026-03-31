@@ -37,9 +37,7 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
   `],
   template: `
     <div class="page-wrapper">
-      <h1 class="page-title">
-        {{ auth.isSystemAdmin ? '⚙️ Admin' : '👥 Team' }} <span>{{ auth.isSystemAdmin ? 'Panel' : 'Approvals' }}</span>
-      </h1>
+      <h1 class="page-title">⚙️ Admin <span>Panel</span></h1>
 
       <!-- Quick Stats -->
       <div class="stats-grid">
@@ -57,10 +55,10 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
         <button class="tab" [class.active]="tab==='attendance'" (click)="tab='attendance'">
           📋 Today's Attendance
         </button>
-        <button class="tab" [class.active]="tab==='employees'" (click)="tab='employees'" *ngIf="auth.isSystemAdmin || auth.isGeneralManager">
+        <button class="tab" [class.active]="tab==='employees'" (click)="tab='employees'">
           👥 Users
         </button>
-        <button class="tab" [class.active]="tab==='roles'" (click)="tab='roles'" *ngIf="auth.isSystemAdmin || auth.isGeneralManager">
+        <button class="tab" [class.active]="tab==='roles'" (click)="tab='roles'">
           🛠️ Roles
         </button>
       </div>
@@ -355,9 +353,7 @@ export class AdminComponent implements OnInit {
     const position = (this.auth.currentUser?.position ?? '').toLowerCase();
     const role = (this.auth.currentUser?.role ?? '').toLowerCase();
 
-    if (role === 'admin') {
-      return 'system_admin';
-    } else if (position === 'general manager') {
+    if (role === 'admin' || position === 'general manager') {
         return 'admin';
     } else if (position === 'manager') {
         return 'manager';

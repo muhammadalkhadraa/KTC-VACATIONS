@@ -13,7 +13,7 @@ export const authGuard: CanActivateFn = () => {
 export const adminGuard: CanActivateFn = () => {
   const auth   = inject(AuthService);
   const router = inject(Router);
-  if (auth.hasApprovalRights) return true;
+  if (auth.isAdmin || auth.isManager) return true;
   router.navigate(['/dashboard']);
   return false;
 };
