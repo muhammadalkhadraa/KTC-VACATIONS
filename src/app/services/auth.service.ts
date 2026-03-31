@@ -1,100 +1,77 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, from, map, Observable, of, tap } from 'rxjs';
+import { BehaviorSubject, from, map, Observable, of } from 'rxjs';
 import { SupabaseService } from './supabase.service';
-import { Employee, RegisterRequest } from '../models/models';
+import { Employee } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-
-  private readonly STORAGE_KEY = 'ktc-current-user';
-
+  private readonly STORAGE_KEY = 'ktc_user';
   private _currentUser = new BehaviorSubject<Employee | null>(null);
   currentUser$ = this._currentUser.asObservable();
-
-  get currentUser(): Employee | null { return this._currentUser.value; }
-  get isLoggedIn(): boolean          { return !!this._currentUser.value; }
-
-  /** True if user is a manager (approves employee requests) */
-  get isManager(): boolean {
-    return this._currentUser.value?.position?.toLowerCase() === 'manager';
-  }
-
-  /** True if user is a general manager (approves manager requests, full admin access) */
-  get isGeneralManager(): boolean {
-    return this._currentUser.value?.position?.toLowerCase() === 'general manager';
-  }
-
-  /** True if either manager or general manager (can access admin panel) */
-  get isAdmin(): boolean {
-    return this.isManager || this.isGeneralManager;
-  }
 
   constructor(private supabaseSvc: SupabaseService) {
     const saved = localStorage.getItem(this.STORAGE_KEY);
     if (saved) {
       try {
-        const parsed: Employee = JSON.parse(saved);
-        if (parsed?.position) {
-          parsed.position = parsed.position.toString().trim().toLowerCase();
-        }
-        if (parsed?.id) {
-          parsed.id = String(parsed.id).trim().toUpperCase();
-        }
-        this._currentUser.next(parsed);
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(parsed));
+        this._currentUser.next(JSON.parse(saved));
       } catch {
         localStorage.removeItem(this.STORAGE_KEY);
       }
     }
   }
 
-  login(id: string, password: string) {
-    const empId = id.trim().toUpperCase();
+  getCurrentUser(): Employee | null {
+    return this._currentUser.value;
+  }
+
+  login(empId: string, password: string): Observable<Employee> {
     return from(
       this.supabaseSvc.supabase
-        .from('employees')
-        .select('*')
+        .from('employee')
+        .select('id, name, department, position, joined, total_holidays:totalHolidays, used_holidays:usedHolidays, password, role')
         .eq('id', empId)
-        .eq('password', password)
         .single()
     ).pipe(
       map(({ data, error }) => {
-        if (error || !data) return null;
-        const res = data as any;
-        const normalizedPosition = (res.position ?? '').toString().trim().toLowerCase();
+        if (error || !data) throw error || new Error('User not found');
+        const user = data as any;
+        if (user.password !== password) throw new Error('Invalid password');
+        
         const emp: Employee = {
-          id: String(res.id).trim().toUpperCase(),
-          name: res.name,
-          department: res.department || '',
-          position: normalizedPosition,
-          joined: res.joined || '',
-          totalHolidays: res.totalHolidays || 0,
-          usedHolidays: res.usedHolidays || 0,
+          id: user.id,
+          name: user.name,
+          department: user.department,
+          position: user.position,
+          joined: user.joined,
+          totalHolidays: user.totalHolidays,
+          usedHolidays: user.usedHolidays,
           password: '',
-          role: res.role || 'employee'
+          role: user.role
         };
+        
         this._currentUser.next(emp);
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(emp));
         return emp;
-      }),
-      catchError(() => of(null))
+      })
     );
   }
 
-  logout(): void {
+  logout() {
     this._currentUser.next(null);
     localStorage.removeItem(this.STORAGE_KEY);
   }
 
   register(emp: Partial<Employee>) {
     const newEmp = {
-      Id: emp.id,
-      Name: emp.name,
-      Department: emp.department,
-      Position: emp.position,
-      Joined: new Date().toISOString().split('T')[0],
-      TotalHolidays: 21,
-      UsedHolidays: 0
+      id: emp.id,
+      name: emp.name,
+      department: emp.department,
+      position: emp.position,
+      joined: new Date().toISOString().split('T')[0],
+      total_holidays: 21,
+      used_holidays: 0,
+      password: emp.password,
+      role: 'employee'
     };
     return from(this.supabaseSvc.supabase.from('employee').insert([newEmp]));
   }
@@ -103,8 +80,8 @@ export class AuthService {
     return from(
       this.supabaseSvc.supabase
         .from('employee')
-        .select('Id:id, Name:name, Department:department, Position:position, Joined:joined, TotalHolidays:totalHolidays, UsedHolidays:usedHolidays, Password:password, Role:role')
-        .eq('Id', empId)
+        .select('id, name, department, position, joined, total_holidays:totalHolidays, used_holidays:usedHolidays, password, role')
+        .eq('id', empId)
         .single()
     ).pipe(
       map(({ data }) => data as unknown as Employee)
@@ -116,22 +93,20 @@ export class AuthService {
     return from(
       this.supabaseSvc.supabase
         .from('employee')
-        .select('Id:id, Name:name, Department:department, Position:position, Joined:joined, TotalHolidays:totalHolidays, UsedHolidays:usedHolidays, Password:password, Role:role')
+        .select('id, name, department, position, joined, total_holidays:totalHolidays, used_holidays:usedHolidays, password, role')
     ).pipe(
       map(({ data }) => (data || []) as unknown as Employee[])
     );
   }
 
   updateUserRole(empId: string, role: string) {
-    const id = empId.trim().toUpperCase();
-    return from(this.supabaseSvc.supabase.from('employee').update({ Role: role }).eq('Id', id).select('Id:id, Role:role').single()).pipe(
+    return from(this.supabaseSvc.supabase.from('employee').update({ role }).eq('id', empId).select('id, role').single()).pipe(
       map(({ data }) => data as unknown as Employee)
     );
   }
 
   updateUserPosition(empId: string, position: string) {
-    const id = empId.trim().toUpperCase();
-    return from(this.supabaseSvc.supabase.from('employee').update({ Position: position }).eq('Id', id).select('Id:id, Position:position').single()).pipe(
+    return from(this.supabaseSvc.supabase.from('employee').update({ position }).eq('id', empId).select('id, position').single()).pipe(
       map(({ data }) => data as unknown as Employee)
     );
   }
@@ -139,17 +114,6 @@ export class AuthService {
   /** Update used holidays after an approval */
   addUsedHolidays(empId: string, days: number) {
     const id = empId.trim().toUpperCase();
-    // Assuming the RPC function is named 'increment_used_holidays' and its parameter names match the DB schema.
     return from(this.supabaseSvc.supabase.rpc('increment_used_holidays', { emp_id: id, days_count: days }));
-  }
-
-  /** Update local user state from a full employee object */
-  updateUserState(emp: Employee) {
-    const current = this._currentUser.value;
-    if (current && String(current.id).trim().toUpperCase() === String(emp.id).trim().toUpperCase()) {
-      const updated = { ...current, ...emp };
-      this._currentUser.next(updated);
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(updated));
-    }
   }
 }

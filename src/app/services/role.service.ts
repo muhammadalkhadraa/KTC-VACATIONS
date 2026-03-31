@@ -7,7 +7,7 @@ import { Role } from '../models/models';
 export class RoleService {
   constructor(private supabaseSvc: SupabaseService) {}
 
-  private readonly SELECT_ALL = 'Id:id, Name:name';
+  private readonly SELECT_ALL = 'id, name';
 
   getAll(): Observable<Role[]> {
     return from(this.supabaseSvc.supabase.from('Role').select(this.SELECT_ALL)).pipe(
@@ -16,13 +16,13 @@ export class RoleService {
   }
 
   create(name: string): Observable<Role> {
-    return from(this.supabaseSvc.supabase.from('Role').insert([{ Name: name }]).select(this.SELECT_ALL).single()).pipe(
+    return from(this.supabaseSvc.supabase.from('Role').insert([{ name }]).select(this.SELECT_ALL).single()).pipe(
       map(({ data }) => data as unknown as Role)
     );
   }
 
   delete(id: number): Observable<void> {
-    return from(this.supabaseSvc.supabase.from('Role').delete().eq('Id', id)).pipe(
+    return from(this.supabaseSvc.supabase.from('Role').delete().eq('id', id)).pipe(
       map(() => void 0)
     );
   }
