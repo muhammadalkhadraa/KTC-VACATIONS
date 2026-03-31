@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://localhost:5174/api'
+  apiUrl: 'https://ktc-vacations.vercel.app'
 };
