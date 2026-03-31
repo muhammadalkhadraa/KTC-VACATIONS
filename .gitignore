@@ -1,0 +1,23 @@
+node_modules/
+.angular/
+.env
+dist/
+
+# .NET / ASP.NET Core
+[Bb]in/
+[Oo]bj/
+Debug/
+Release/
+*.user
+*.suo
+*.pfx
+*.publishsettings
+*.db
+.vs/
+.vscode/
+
+# Build artifacts
+KtcBackend/bin/
+KtcBackend/obj/
+SqlFix/bin/
+SqlFix/obj/
