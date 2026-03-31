@@ -1,39 +1,67 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { from, map, Observable } from 'rxjs';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { AttendanceRecord, CheckInStatus } from '../models/models';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
-  private api = `${environment.apiUrl}/attendance`;
+  private supabase: SupabaseClient;
 
-  constructor(private http: HttpClient) {}
+  constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+  }
 
   /**
-   * Retrieve raw check‑in rows for an employee.  The backend returns
-   * `CheckInStatus` objects; components can transform them into
-   * `AttendanceRecord` if needed.
+   * Retrieve raw check‑in rows for an employee. 
    */
   getHistory(empId: string): Observable<CheckInStatus[]> {
-    return this.http.get<CheckInStatus[]>(`${this.api}/${empId}`);
+    const id = empId.trim().toUpperCase();
+    return from(
+      this.supabase
+        .from('attendance_records')
+        .select('*')
+        .eq('empId', id)
+        .order('checkInTime', { ascending: false })
+    ).pipe(
+      map(({ data }) => (data || []) as CheckInStatus[])
+    );
   }
 
   /**
    * All check‑in rows recorded today (UTC).
    */
   getToday(): Observable<CheckInStatus[]> {
-    return this.http.get<CheckInStatus[]>(`${this.api}/today`);
+    const today = new Date().toISOString().split('T')[0];
+    return from(
+      this.supabase
+        .from('attendance_records')
+        .select('*')
+        .gte('checkInTime', `${today}T00:00:00`)
+        .lte('checkInTime', `${today}T23:59:59`)
+    ).pipe(
+      map(({ data }) => (data || []) as CheckInStatus[])
+    );
   }
 
   /**
-   * Record a new state (in or out).  The server timestamps times.
+   * Record a new state (in or out).
    */
   postStatus(status: Partial<CheckInStatus>): Observable<CheckInStatus> {
-    return this.http.post<CheckInStatus>(this.api, status);
+    const record = {
+      ...status,
+      empId: status.empId?.trim().toUpperCase(),
+      checkInTime: status.state === 'in' ? new Date().toISOString() : status.checkInTime,
+      checkOutTime: status.state === 'out' ? new Date().toISOString() : status.checkOutTime
+    };
+    return from(
+      this.supabase.from('attendance_records').upsert([record]).select().single()
+    ).pipe(
+      map(({ data }) => data as CheckInStatus)
+    );
   }
 
-  // convenience helpers for components that still want to build a summary
+  // convenience helpers
   toRecord(status: CheckInStatus): AttendanceRecord {
     return {
       date: status.checkInTime ? status.checkInTime.slice(0, 10) : '',

@@ -1,24 +1,32 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { from, map, Observable } from 'rxjs';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 import { Role } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class RoleService {
-  private api = `${environment.apiUrl}/roles`;
+  private supabase: SupabaseClient;
 
-  constructor(private http: HttpClient) {}
+  constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+  }
 
   getAll(): Observable<Role[]> {
-    return this.http.get<Role[]>(this.api);
+    return from(this.supabase.from('roles').select('*')).pipe(
+      map(({ data }) => (data || []) as Role[])
+    );
   }
 
   create(name: string): Observable<Role> {
-    return this.http.post<Role>(this.api, { name });
+    return from(this.supabase.from('roles').insert([{ name }]).select().single()).pipe(
+      map(({ data }) => data as Role)
+    );
   }
 
   delete(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.api}/${id}`);
+    return from(this.supabase.from('roles').delete().eq('id', id)).pipe(
+      map(() => void 0)
+    );
   }
 }

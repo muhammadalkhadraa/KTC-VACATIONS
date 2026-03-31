@@ -1,4 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://ktc-vacations.vercel.app/login'
+  supabaseUrl: 'https://qhnqgsdprnedynbradxx.supabase.co',
+  supabaseKey: 'sb_publishable_riKSgumMWGWdYq3iKnjVCQ_WxRZpxYI'
 };

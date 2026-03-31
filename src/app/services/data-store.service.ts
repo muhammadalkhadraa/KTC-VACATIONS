@@ -1,6 +1,5 @@
 import { Injectable, signal, effect, inject, untracked } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { HttpClient } from '@angular/common/http';
 import { AuthService } from './auth.service';
 import { HolidayService } from './holiday.service';
 import { AttendanceService } from './attendance.service';
@@ -22,9 +21,8 @@ export class DataStoreService {
   readonly isLoading = signal<boolean>(false);
 
   constructor() {
-    // This is our "useEffect" equivalent
     effect(() => {
-      const u = this.user(); // This effect depends on the user signal
+      const u = this.user(); 
       if (u) {
         untracked(() => this.fetchAll(u.id));
       } else {
@@ -58,7 +56,6 @@ export class DataStoreService {
     this.isLoading.set(false);
   }
 
-  /** Force a refresh of all data */
   refresh() {
     const u = this.user();
     if (u) this.fetchAll(u.id);

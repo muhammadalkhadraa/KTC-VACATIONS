@@ -1,68 +1,104 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { catchError, map, Observable, of, tap } from 'rxjs';
+import { catchError, from, map, Observable, of, tap } from 'rxjs';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { HolidayRequest } from '../models/models';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class HolidayService {
-  private api = `${environment.apiUrl}/holiday`;
+  private supabase: SupabaseClient;
   private cache = new Map<string, HolidayRequest[]>();
 
-  constructor(private http: HttpClient) {}
+  constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+  }
 
   getForEmployee(empId: string): Observable<HolidayRequest[]> {
     if (!empId) return of([]);
     const id = String(empId).trim().toUpperCase();
     const cached = this.cache.get(id);
-    const request$ = this.http.get<HolidayRequest[]>(`${this.api}/${id}`);
 
-    return request$.pipe(
-      map((reqs: HolidayRequest[]) => {
-        // If backend returned nothing but we already have cached results, keep showing them.
-        if (!reqs.length && cached) {
-          return cached;
-        }
-        // Otherwise use and cache the fresh response.
+    return from(
+      this.supabase.from('holiday_requests').select('*').eq('empId', id).order('submittedAt', { ascending: false })
+    ).pipe(
+      map(({ data }) => {
+        const reqs = (data || []) as HolidayRequest[];
+        if (!reqs.length && cached) return cached;
         this.cache.set(id, reqs);
         return reqs;
       }),
-      catchError(() => {
-        const fallback = this.cache.get(id) ?? [];
-        return of(fallback);
-      })
+      catchError(() => of(this.cache.get(id) || []))
     );
   }
 
   submit(req: Partial<HolidayRequest>): Observable<HolidayRequest> {
-    return this.http.post<HolidayRequest>(this.api, req).pipe(
-      tap(created => {
+    const newReq = {
+      ...req,
+      submittedAt: new Date().toISOString(),
+      status: 'pending',
+      managerStatus: 'pending',
+      gmStatus: 'pending'
+    };
+    return from(this.supabase.from('holiday_requests').insert([newReq]).select().single()).pipe(
+      map(({ data }) => {
+        const created = data as HolidayRequest;
         const id = created.empId.toUpperCase();
         const existing = this.cache.get(id) ?? [];
         this.cache.set(id, [...existing, created]);
-      }),
-      catchError(err => {
-        // keep cache unchanged on error
-        throw err;
+        return created;
       })
     );
   }
 
   // admin helpers
   getAll(): Observable<HolidayRequest[]> {
-    return this.http.get<HolidayRequest[]>(this.api);
+    return from(this.supabase.from('holiday_requests').select('*').order('submittedAt', { ascending: false })).pipe(
+      map(({ data }) => (data || []) as HolidayRequest[])
+    );
   }
 
   getPending(role?: string): Observable<HolidayRequest[]> {
-    const query = role ? `?role=${encodeURIComponent(role)}` : '';
-    return this.http.get<HolidayRequest[]>(`${this.api}/pending${query}`);
+    let query = this.supabase.from('holiday_requests').select('*').eq('status', 'pending');
+
+    if (role === 'manager') {
+      query = query.eq('managerStatus', 'pending');
+    } else if (role === 'general manager') {
+      query = query.eq('managerStatus', 'approved').eq('gmStatus', 'pending');
+    }
+
+    return from(query.order('submittedAt', { ascending: false })).pipe(
+      map(({ data }) => (data || []) as HolidayRequest[])
+    );
   }
 
   approve(id: number, approverId: string, approverRole: string): Observable<HolidayRequest> {
-    return this.http.post<HolidayRequest>(`${this.api}/approve/${id}`, { approverId, approverRole });
+    const update: any = {};
+    if (approverRole === 'manager') {
+      update.managerStatus = 'approved';
+      update.managerId = approverId;
+    } else if (approverRole === 'general manager') {
+      update.gmStatus = 'approved';
+      update.gmId = approverId;
+      update.status = 'approved'; 
+    }
+
+    return from(this.supabase.from('holiday_requests').update(update).eq('requestId', id).select().single()).pipe(
+      map(({ data }) => data as HolidayRequest)
+    );
   }
 
   reject(id: number, approverId: string, approverRole: string): Observable<HolidayRequest> {
-    return this.http.post<HolidayRequest>(`${this.api}/reject/${id}`, { approverId, approverRole });
+    const update: any = { status: 'rejected' };
+    if (approverRole === 'manager') {
+      update.managerStatus = 'rejected';
+      update.managerId = approverId;
+    } else if (approverRole === 'general manager') {
+      update.gmStatus = 'rejected';
+      update.gmId = approverId;
+    }
+
+    return from(this.supabase.from('holiday_requests').update(update).eq('requestId', id).select().single()).pipe(
+      map(({ data }) => data as HolidayRequest)
+    );
   }
 }

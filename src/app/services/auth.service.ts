@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, of, tap } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
-import { Employee } from '../models/models';
+import { BehaviorSubject, catchError, from, map, of, tap } from 'rxjs';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { Employee, RegisterRequest } from '../models/models';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -30,9 +30,10 @@ export class AuthService {
     return this.isManager || this.isGeneralManager;
   }
 
-  private apiUrl = environment.apiUrl;
+  private supabase: SupabaseClient;
 
-  constructor(private http: HttpClient) {
+  constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
     const saved = localStorage.getItem(this.STORAGE_KEY);
     if (saved) {
       try {
@@ -52,27 +53,36 @@ export class AuthService {
   }
 
   login(id: string, password: string) {
-    return this.http.post<{id: string, name: string, position: string}>(
-        `${this.apiUrl}/auth/login`, { id, password })
-      .pipe(
-        tap(res => {
-          const normalizedPosition = (res.position ?? '').toString().trim().toLowerCase();
-          const emp: Employee = {
-            id: String(res.id).trim().toUpperCase(),
-            name: res.name,
-            department: '',
-            position: normalizedPosition,
-            joined: '',
-            totalHolidays: 0,
-            usedHolidays: 0,
-            password: '',
-            role: 'employee'
-          };
-          this._currentUser.next(emp);
-          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(emp));
-        }),
-        catchError(() => of(null))
-      );
+    const empId = id.trim().toUpperCase();
+    return from(
+      this.supabase
+        .from('employees')
+        .select('*')
+        .eq('id', empId)
+        .eq('password', password)
+        .single()
+    ).pipe(
+      map(({ data, error }) => {
+        if (error || !data) return null;
+        const res = data as any;
+        const normalizedPosition = (res.position ?? '').toString().trim().toLowerCase();
+        const emp: Employee = {
+          id: String(res.id).trim().toUpperCase(),
+          name: res.name,
+          department: res.department || '',
+          position: normalizedPosition,
+          joined: res.joined || '',
+          totalHolidays: res.totalHolidays || 0,
+          usedHolidays: res.usedHolidays || 0,
+          password: '',
+          role: res.role || 'employee'
+        };
+        this._currentUser.next(emp);
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(emp));
+        return emp;
+      }),
+      catchError(() => of(null))
+    );
   }
 
   logout(): void {
@@ -80,30 +90,53 @@ export class AuthService {
     localStorage.removeItem(this.STORAGE_KEY);
   }
 
-  register(data: {id: string, password: string, name: string, department: string, position: string}) {
-    return this.http.post(`${this.apiUrl}/auth/register`, data);
+  register(data: RegisterRequest) {
+    const emp = {
+      id: data.id.trim().toUpperCase(),
+      name: data.name,
+      password: data.password,
+      department: data.department,
+      position: data.position,
+      role: 'employee',
+      totalHolidays: 21,
+      usedHolidays: 0,
+      joined: new Date().toISOString().split('T')[0]
+    };
+    return from(this.supabase.from('employees').insert([emp]));
   }
 
   getEmployeeById(id: string) {
-    return this.http.get<Employee>(`${this.apiUrl}/profile/${id}`);
+    const empId = id.trim().toUpperCase();
+    return from(this.supabase.from('employees').select('*').eq('id', empId).single()).pipe(
+      map(({ data }) => data as Employee)
+    );
   }
 
   /** Retrieve the list of users (admin feature). */
   getAllEmployees() {
-    return this.http.get<Employee[]>(`${this.apiUrl}/admin/users`);
+    return from(this.supabase.from('employees').select('*')).pipe(
+      map(({ data }) => (data || []) as Employee[])
+    );
   }
 
   updateUserRole(empId: string, role: string) {
-    return this.http.put<Employee>(`${this.apiUrl}/admin/users/${encodeURIComponent(empId)}/role`, { role });
+    const id = empId.trim().toUpperCase();
+    return from(this.supabase.from('employees').update({ role }).eq('id', id).select().single()).pipe(
+      map(({ data }) => data as Employee)
+    );
   }
 
   updateUserPosition(empId: string, position: string) {
-    return this.http.put<Employee>(`${this.apiUrl}/admin/users/${encodeURIComponent(empId)}/position`, { position });
+    const id = empId.trim().toUpperCase();
+    return from(this.supabase.from('employees').update({ position }).eq('id', id).select().single()).pipe(
+      map(({ data }) => data as Employee)
+    );
   }
 
   /** Update used holidays after an approval */
   addUsedHolidays(empId: string, days: number) {
-    return this.http.post(`${this.apiUrl}/attendance/update-used`, { empId, days });
+    const id = empId.trim().toUpperCase();
+    return from(this.supabase.rpc('increment_used_holidays', { emp_id: id, days_count: days }));
   }
 
   /** Update local user state from a full employee object */
