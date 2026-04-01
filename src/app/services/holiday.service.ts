@@ -9,21 +9,7 @@ export class HolidayService {
 
   constructor(private supabaseSvc: SupabaseService) {}
 
-  private readonly SELECT_ALL = `
-    request_id:requestId, 
-    emp_id:empId, 
-    emp_name:empName, 
-    start_date:startDate, 
-    end_date:endDate, 
-    days:days, 
-    reason:reason, 
-    status:status, 
-    manager_status:managerStatus, 
-    manager_id:managerId, 
-    gm_status:gmStatus, 
-    gm_id:gmId, 
-    submitted_at:submittedAt
-  `;
+  private readonly SELECT_ALL = 'request_id:requestId,emp_id:empId,emp_name:empName,start_date:startDate,end_date:endDate,days:days,reason:reason,status:status,manager_status:managerStatus,manager_id:managerId,gm_status:gmStatus,gm_id:gmId,submitted_at:submittedAt';
 
   getForEmployee(empId: string): Observable<HolidayRequest[]> {
     if (!empId) return of([]);

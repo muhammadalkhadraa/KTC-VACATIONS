@@ -8,6 +8,7 @@ export class AuthService {
   private readonly STORAGE_KEY = 'ktc_user';
   private _currentUser = new BehaviorSubject<Employee | null>(null);
   currentUser$ = this._currentUser.asObservable();
+  private readonly SELECT_ALL = 'id,name,department,position,joined,total_holidays:totalHolidays,used_holidays:usedHolidays,password,role';
 
   constructor(private supabaseSvc: SupabaseService) {
     const saved = localStorage.getItem(this.STORAGE_KEY);
@@ -32,7 +33,7 @@ export class AuthService {
     return from(
       this.supabaseSvc.supabase
         .from('employees')
-        .select('id, name, department, position, joined, total_holidays:totalHolidays, used_holidays:usedHolidays, password, role')
+        .select(this.SELECT_ALL)
         .eq('id', empId)
         .single()
     ).pipe(
@@ -84,7 +85,7 @@ export class AuthService {
     return from(
       this.supabaseSvc.supabase
         .from('employees')
-        .select('id, name, department, position, joined, total_holidays:totalHolidays, used_holidays:usedHolidays, password, role')
+        .select(this.SELECT_ALL)
         .eq('id', empId)
         .single()
     ).pipe(
@@ -97,7 +98,7 @@ export class AuthService {
     return from(
       this.supabaseSvc.supabase
         .from('employees')
-        .select('id, name, department, position, joined, total_holidays:totalHolidays, used_holidays:usedHolidays, password, role')
+        .select(this.SELECT_ALL)
     ).pipe(
       map(({ data }) => (data || []) as unknown as Employee[])
     );
