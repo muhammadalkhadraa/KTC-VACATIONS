@@ -44,7 +44,7 @@ export class AuthService {
     return from(
       this.supabaseSvc.supabase
         .from('employees')
-        .select(this.SELECT_ALL)
+        .select('id,name,department,position,joined,total_holidays,used_holidays,password,role')
         .eq('id', empId)
         .single()
     ).pipe(
@@ -100,7 +100,20 @@ export class AuthService {
         .eq('id', empId)
         .single()
     ).pipe(
-      map(({ data }) => data as unknown as Employee)
+      map(({ data }) => {
+        const user = data as any;
+        return {
+          id: user.id,
+          name: user.name,
+          department: user.department,
+          position: user.position,
+          joined: user.joined,
+          totalHolidays: user.total_holidays,
+          usedHolidays: user.used_holidays,
+          password: '',
+          role: user.role
+        } as Employee;
+      })
     );
   }
 
