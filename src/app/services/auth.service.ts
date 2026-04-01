@@ -28,6 +28,17 @@ export class AuthService {
   get currentUser(): Employee | null {
     return this._currentUser.value;
   }
+  get isLoggedIn(): boolean {
+    return !!this._currentUser.value;
+  }
+
+  get isAdmin(): boolean {
+    return this._currentUser.value?.role === 'Admin';
+  }
+
+  get isManager(): boolean {
+    return this._currentUser.value?.role === 'Manager';
+  }
 
   login(empId: string, password: string): Observable<Employee> {
     return from(
@@ -41,7 +52,7 @@ export class AuthService {
         if (error || !data) throw error || new Error('User not found');
         const user = data as any;
         if (user.password !== password) throw new Error('Invalid password');
-        
+
         const emp: Employee = {
           id: user.id,
           name: user.name,
@@ -53,7 +64,7 @@ export class AuthService {
           password: '',
           role: user.role
         };
-        
+
         this._currentUser.next(emp);
         localStorage.setItem(this.STORAGE_KEY, JSON.stringify(emp));
         return emp;
