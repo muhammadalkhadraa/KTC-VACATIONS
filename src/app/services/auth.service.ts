@@ -24,6 +24,10 @@ export class AuthService {
     return this._currentUser.value;
   }
 
+  get currentUser(): Employee | null {
+    return this._currentUser.value;
+  }
+
   login(empId: string, password: string): Observable<Employee> {
     return from(
       this.supabaseSvc.supabase

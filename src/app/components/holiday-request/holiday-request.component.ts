@@ -42,13 +42,13 @@ import { DataStoreService } from '../../services/data-store.service';
           </div>
 
           <div class="form-group">
-            <label>Start Date</label>
-            <input type="date" [(ngModel)]="startDate" [min]="today" (change)="calcPreview()" />
+            <label for="startDate">Start Date</label>
+            <input id="startDate" name="startDate" type="date" [(ngModel)]="startDate" [min]="today" (change)="calcPreview()" />
           </div>
 
           <div class="form-group">
-            <label>End Date</label>
-            <input type="date" [(ngModel)]="endDate" [min]="startDate || today" (change)="calcPreview()" />
+            <label for="endDate">End Date</label>
+            <input id="endDate" name="endDate" type="date" [(ngModel)]="endDate" [min]="startDate || today" (change)="calcPreview()" />
           </div>
 
           <div class="days-preview" *ngIf="previewDays > 0">
@@ -56,8 +56,8 @@ import { DataStoreService } from '../../services/data-store.service';
           </div>
 
           <div class="form-group">
-            <label>Reason</label>
-            <textarea [(ngModel)]="reason" placeholder="Briefly describe the reason for your leave..."></textarea>
+            <label for="reason">Reason</label>
+            <textarea id="reason" name="reason" [(ngModel)]="reason" placeholder="Briefly describe the reason for your leave..."></textarea>
           </div>
 
           <button class="btn-primary" (click)="submit()">Submit Request →</button>

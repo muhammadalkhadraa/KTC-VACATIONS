@@ -94,13 +94,13 @@ import { ToastService } from '../../services/toast.service';
         <h2>Employee Portal Login</h2>
 
         <div class="form-group">
-          <label>Employee ID</label>
-          <input type="text" [(ngModel)]="empId" placeholder="e.g. EMP001" (keyup.enter)="login()" />
+          <label for="empId">Employee ID</label>
+          <input id="empId" name="empId" type="text" [(ngModel)]="empId" placeholder="e.g. EMP001" (keyup.enter)="login()" />
         </div>
 
         <div class="form-group">
-          <label>Password</label>
-          <input type="password" [(ngModel)]="password" placeholder="Enter your password" (keyup.enter)="login()" />
+          <label for="password">Password</label>
+          <input id="password" name="password" type="password" [(ngModel)]="password" placeholder="Enter your password" (keyup.enter)="login()" />
         </div>
 
         <button class="btn" (click)="login()">Login →</button>

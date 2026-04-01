@@ -95,24 +95,24 @@ import { ToastService } from '../../services/toast.service';
         <h2>Create an Account</h2>
 
         <div class="form-group">
-          <label>Employee ID</label>
-          <input type="text" [(ngModel)]="id" placeholder="EMP001" />
+          <label for="regId">Employee ID</label>
+          <input id="regId" name="regId" type="text" [(ngModel)]="id" placeholder="EMP001" />
         </div>
         <div class="form-group">
-          <label>Name</label>
-          <input type="text" [(ngModel)]="name" placeholder="John Doe" />
+          <label for="regName">Name</label>
+          <input id="regName" name="regName" type="text" [(ngModel)]="name" placeholder="John Doe" />
         </div>
         <div class="form-group">
-          <label>Department</label>
-          <input type="text" [(ngModel)]="department" placeholder="Production" />
+          <label for="regDept">Department</label>
+          <input id="regDept" name="regDept" type="text" [(ngModel)]="department" placeholder="Production" />
         </div>
         <div class="form-group">
-          <label>Position</label>
-          <input type="text" [(ngModel)]="position" placeholder="Operator" />
+          <label for="regPos">Position</label>
+          <input id="regPos" name="regPos" type="text" [(ngModel)]="position" placeholder="Operator" />
         </div>
         <div class="form-group">
-          <label>Password</label>
-          <input type="password" [(ngModel)]="password" placeholder="Choose a password" />
+          <label for="regPass">Password</label>
+          <input id="regPass" name="regPass" type="password" [(ngModel)]="password" placeholder="Choose a password" />
         </div>
 
         <button class="btn" (click)="register()">Register →</button>
