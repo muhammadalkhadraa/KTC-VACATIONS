@@ -129,9 +129,9 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
       <div *ngIf="tab==='roles'" class="card">
         <div class="card-title">🛠️ Manage Roles</div>
         <div class="form-group" style="margin-bottom:16px;">
-          <label>New role</label>
+          <label for="newRoleName">New role</label>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
-            <input type="text" [(ngModel)]="newRoleName" placeholder="e.g. supervisor" style="flex:1;" />
+            <input id="newRoleName" name="newRoleName" type="text" [(ngModel)]="newRoleName" placeholder="e.g. supervisor" style="flex:1;" />
             <button class="btn-primary" (click)="createRole()">Add role</button>
           </div>
         </div>
@@ -163,7 +163,7 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
               <td>{{ e.id }}</td>
               <td>{{ e.department }}</td>
               <td>
-                <select [ngModel]="e.position" (ngModelChange)="changeUserPosition(e, $event)">
+                <select id="userPosition-{{e.id}}" name="userPosition-{{e.id}}" aria-label="Job Position" [ngModel]="e.position" (ngModelChange)="changeUserPosition(e, $event)">
                   <option *ngFor="let pos of jobPositions" [value]="pos">{{ pos }}</option>
                 </select>
               </td>
@@ -171,7 +171,7 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
                 <button class="action-btn" [ngClass]="{ 'btn-toggle-on': e.role === 'admin', 'btn-toggle-off': e.role !== 'admin' }" (click)="toggleAdmin(e)">
                   {{ e.role === 'admin' ? 'Admin ✅' : 'Make Admin' }}
                 </button>
-                <select [ngModel]="e.role" (ngModelChange)="changeUserRole(e, $event)">
+                <select id="userRole-{{e.id}}" name="userRole-{{e.id}}" aria-label="Access Role" [ngModel]="e.role" (ngModelChange)="changeUserRole(e, $event)">
                   <option *ngFor="let r of accessRoles" [value]="r">{{ r }}</option>
                 </select>
               </td>

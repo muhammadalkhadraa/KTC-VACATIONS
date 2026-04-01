@@ -1,0 +1,20 @@
+﻿{
+    "value":  [
+                  {
+                      "request_id":  1,
+                      "emp_id":  "22034",
+                      "emp_name":  "muhammad",
+                      "start_date":  "2026-04-01T00:00:00+00:00",
+                      "end_date":  "2026-04-03T00:00:00+00:00",
+                      "days":  3,
+                      "reason":  "sssss",
+                      "manager_id":  "ADMIN",
+                      "manager_status":  "approved",
+                      "gm_id":  "ADMIN",
+                      "gm_status":  "approved",
+                      "status":  "approved",
+                      "submitted_at":  "2026-03-31T17:38:48.626378+00:00"
+                  }
+              ],
+    "Count":  1
+}

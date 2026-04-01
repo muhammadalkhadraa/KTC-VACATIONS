@@ -13,7 +13,7 @@ export class AttendanceService {
     const id = empId.trim().toUpperCase();
     return from(
       this.supabaseSvc.supabase
-        .from('Attendance')
+        .from('check_ins')
         .select(this.SELECT_ALL)
         .eq('emp_id', id)
         .order('check_in_time', { ascending: false })
@@ -29,7 +29,7 @@ export class AttendanceService {
     const today = new Date().toISOString().split('T')[0];
     return from(
       this.supabaseSvc.supabase
-        .from('Attendance')
+        .from('check_ins')
         .select(this.SELECT_ALL)
         .gte('check_in_time', `${today}T00:00:00`)
         .lte('check_in_time', `${today}T23:59:59`)
@@ -49,7 +49,7 @@ export class AttendanceService {
       check_out_time: status.state === 'out' ? new Date().toISOString() : status.checkOutTime
     };
     return from(
-      this.supabaseSvc.supabase.from('Attendance').upsert([record]).select(this.SELECT_ALL).single()
+      this.supabaseSvc.supabase.from('check_ins').upsert([record]).select(this.SELECT_ALL).single()
     ).pipe(
       map(({ data }) => data as unknown as CheckInStatus)
     );

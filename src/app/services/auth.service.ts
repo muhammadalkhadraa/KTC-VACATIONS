@@ -31,7 +31,7 @@ export class AuthService {
   login(empId: string, password: string): Observable<Employee> {
     return from(
       this.supabaseSvc.supabase
-        .from('employee')
+        .from('employees')
         .select('id, name, department, position, joined, total_holidays:totalHolidays, used_holidays:usedHolidays, password, role')
         .eq('id', empId)
         .single()
@@ -77,13 +77,13 @@ export class AuthService {
       password: emp.password,
       role: 'employee'
     };
-    return from(this.supabaseSvc.supabase.from('employee').insert([newEmp]));
+    return from(this.supabaseSvc.supabase.from('employees').insert([newEmp]));
   }
 
   getEmployeeById(empId: string) {
     return from(
       this.supabaseSvc.supabase
-        .from('employee')
+        .from('employees')
         .select('id, name, department, position, joined, total_holidays:totalHolidays, used_holidays:usedHolidays, password, role')
         .eq('id', empId)
         .single()
@@ -96,7 +96,7 @@ export class AuthService {
   getAllEmployees() {
     return from(
       this.supabaseSvc.supabase
-        .from('employee')
+        .from('employees')
         .select('id, name, department, position, joined, total_holidays:totalHolidays, used_holidays:usedHolidays, password, role')
     ).pipe(
       map(({ data }) => (data || []) as unknown as Employee[])
@@ -104,13 +104,13 @@ export class AuthService {
   }
 
   updateUserRole(empId: string, role: string) {
-    return from(this.supabaseSvc.supabase.from('employee').update({ role }).eq('id', empId).select('id, role').single()).pipe(
+    return from(this.supabaseSvc.supabase.from('employees').update({ role }).eq('id', empId).select('id, role').single()).pipe(
       map(({ data }) => data as unknown as Employee)
     );
   }
 
   updateUserPosition(empId: string, position: string) {
-    return from(this.supabaseSvc.supabase.from('employee').update({ position }).eq('id', empId).select('id, position').single()).pipe(
+    return from(this.supabaseSvc.supabase.from('employees').update({ position }).eq('id', empId).select('id, position').single()).pipe(
       map(({ data }) => data as unknown as Employee)
     );
   }
