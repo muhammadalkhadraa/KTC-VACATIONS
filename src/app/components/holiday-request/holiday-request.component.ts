@@ -97,21 +97,21 @@ import { DataStoreService } from '../../services/data-store.service';
   `
 })
 export class HolidayRequestComponent implements OnInit, OnDestroy {
-  startDate  = '';
-  endDate    = '';
-  reason     = '';
+  startDate = '';
+  endDate = '';
+  reason = '';
   previewDays = 0;
-  today       = new Date().toISOString().slice(0, 10);
+  today = new Date().toISOString().slice(0, 10);
   private sub = new Subscription();
 
   constructor(
-    public auth:   AuthService,
+    public auth: AuthService,
     private holSvc: HolidayService,
-    private toast:  ToastService,
+    private toast: ToastService,
     private router: Router,
-    private cdr:    ChangeDetectorRef,
-    public store:  DataStoreService
-  ) {}
+    private cdr: ChangeDetectorRef,
+    public store: DataStoreService
+  ) { }
 
   get remaining() { return this.emp ? this.emp.totalHolidays - this.emp.usedHolidays : 0; }
   ngOnInit(): void {
@@ -140,15 +140,15 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
 
   submit(): void {
     if (!this.startDate || !this.endDate) { this.toast.show('⚠️ Please select start and end dates', 'error'); return; }
-    if (this.endDate < this.startDate)     { this.toast.show('⚠️ End date must be after start date', 'error'); return; }
-    if (!this.reason.trim())               { this.toast.show('⚠️ Please enter a reason', 'error'); return; }
+    if (this.endDate < this.startDate) { this.toast.show('⚠️ End date must be after start date', 'error'); return; }
+    if (!this.reason.trim()) { this.toast.show('⚠️ Please enter a reason', 'error'); return; }
 
     const payload: Partial<HolidayRequest> = {
       empId: this.emp.id,
-      empName: this.emp.name,
+      emp_name: this.emp.name,
       startDate: this.startDate,
       endDate: this.endDate,
-      days: this.calcDays(this.startDate,this.endDate),
+      days: this.calcDays(this.startDate, this.endDate),
       reason: this.reason.trim()
     };
 
@@ -162,7 +162,7 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
     });
   }
 
-  fmt(d: string) { return new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
+  fmt(d: string) { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
 
   approvalText(req: HolidayRequest): string {
     if (req.managerStatus === 'rejected') {
@@ -183,7 +183,7 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
     return '';
   }
 
-  bc(s: string)  { return { pending:'badge-pending', approved:'badge-approved', rejected:'badge-rejected' }[s] ?? ''; }
+  bc(s: string) { return { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected' }[s] ?? ''; }
 
   private calcDays(start: string, end: string): number {
     const diff = new Date(end).getTime() - new Date(start).getTime();
