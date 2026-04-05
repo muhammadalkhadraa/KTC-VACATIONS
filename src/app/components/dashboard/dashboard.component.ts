@@ -211,6 +211,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   formatDate(d: string) { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
 
   approvalText(req: HolidayRequest): string {
+    console.log(req)
     if (req.managerStatus === 'rejected') return `Rejected by manager (ID: ${req.managerId})`;
     if (req.gmStatus === 'rejected') return `Rejected by general manager (ID: ${req.gmId})`;
     if (req.managerStatus === 'pending') return 'Waiting for manager approval';

@@ -179,7 +179,7 @@ namespace KtcBackend.Controllers
                 req.ManagerStatus = "approved";
                 req.ManagerId = req.EmpId;
                 req.GMStatus = "pending";
-                req.GMId = "";
+                req.gm_id = "";
             }
             else
             {
@@ -187,7 +187,7 @@ namespace KtcBackend.Controllers
                 req.ManagerId = "";
                 // Employee requests do not require GM approval.
                 req.GMStatus = "approved";
-                req.GMId = "";
+                req.gm_id = "";
             }
 
             UpdateOverallStatus(req);
