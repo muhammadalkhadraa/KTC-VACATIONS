@@ -149,7 +149,7 @@ import { DataStoreService } from '../../services/data-store.service';
                 <thead><tr><th>Employee</th><th>Dates</th><th>Days</th></tr></thead>
                 <tbody>
                   <tr *ngFor="let r of pendingRequests">
-                    <td>{{ r.empName }}</td>
+                    <td>{{ r.emp_name }}</td>
                     <td>{{ formatDate(r.startDate) }}</td>
                     <td>{{ r.days }}</td>
                   </tr>
@@ -177,17 +177,17 @@ export class DashboardComponent implements OnInit, OnDestroy {
     private toast: ToastService,
     private router: Router,
     public store: DataStoreService
-  ) {}
+  ) { }
 
-  get isAdmin()      { return this.auth.isAdmin; }
-  get firstName()    { return this.auth.currentUser?.name.split(' ')[0] ?? ''; }
+  get isAdmin() { return this.auth.isAdmin; }
+  get firstName() { return this.auth.currentUser?.name.split(' ')[0] ?? ''; }
   totalEmployees = 0;
   allEmployees: Employee[] = [];
   pendingCount = 0;
 
   ngOnInit(): void {
-    this.today = new Date().toLocaleDateString('en-GB', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
-    
+    this.today = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+
     // Refetch on navigation if needed, though signals should keep it synced
     this.sub.add(
       this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe(() => {
@@ -196,10 +196,10 @@ export class DashboardComponent implements OnInit, OnDestroy {
     );
   }
 
-  get myRequests()  { return this.store.myRequests(); }
-  get recentAtt()   { return this.store.attendanceHistory().slice().reverse().slice(0, 5); }
-  get summary()     { return this.attSvc.getSummary(this.store.attendanceHistory()); }
-  get remainingHolidays() { 
+  get myRequests() { return this.store.myRequests(); }
+  get recentAtt() { return this.store.attendanceHistory().slice().reverse().slice(0, 5); }
+  get summary() { return this.attSvc.getSummary(this.store.attendanceHistory()); }
+  get remainingHolidays() {
     const u = this.store.user();
     return u ? u.totalHolidays - u.usedHolidays : 0;
   }
@@ -208,7 +208,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.sub.unsubscribe();
   }
 
-  formatDate(d: string) { return new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
+  formatDate(d: string) { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
 
   approvalText(req: HolidayRequest): string {
     if (req.managerStatus === 'rejected') return `Rejected by manager (ID: ${req.managerId})`;
@@ -220,9 +220,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
   }
 
   badgeClass(status: string) {
-    const map: Record<string,string> = {
-      Present:'badge-present', Absent:'badge-absent', Late:'badge-late',
-      Weekend:'badge-weekend', pending:'badge-pending', approved:'badge-approved', rejected:'badge-rejected'
+    const map: Record<string, string> = {
+      Present: 'badge-present', Absent: 'badge-absent', Late: 'badge-late',
+      Weekend: 'badge-weekend', pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected'
     };
     return map[status] ?? 'badge-pending';
   }

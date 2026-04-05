@@ -72,7 +72,7 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
               <thead><tr><th>Employee</th><th>ID</th><th>Period</th><th>Days</th><th>Reason</th><th>Action</th></tr></thead>
               <tbody>
                 <tr *ngFor="let r of pending">
-                  <td>{{ r.empName }}</td>
+                  <td>{{ r.emp_name }}</td>
                   <td>{{ r.empId }}</td>
                   <td>{{ fmt(r.startDate) }} – {{ fmt(r.endDate) }}</td>
                   <td>{{ r.days }}</td>
@@ -96,7 +96,7 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
             <thead><tr><th>Employee</th><th>Period</th><th>Days</th><th>Status</th><th>Submitted</th></tr></thead>
             <tbody>
               <tr *ngFor="let r of allRequests">
-                <td>{{ r.empName }}</td>
+                <td>{{ r.emp_name }}</td>
                 <td>{{ fmt(r.startDate) }} – {{ fmt(r.endDate) }}</td>
                 <td>{{ r.days }}</td>
                 <td><span class="badge" [ngClass]="bc(r.status)">{{ r.status }}</span></td>
@@ -186,23 +186,23 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
 })
 export class AdminComponent implements OnInit {
   tab = 'requests';
-  employees: Employee[]     = [];
-  roles: Role[]             = [];
+  employees: Employee[] = [];
+  roles: Role[] = [];
   accessRoles = ['employee', 'admin'];
   jobPositions = ['employee', 'manager', 'general manager'];
   newRoleName = '';
   allRequests: HolidayRequest[] = [];
   pending: HolidayRequest[] = [];
-  todayAttendance: any[]    = [];
+  todayAttendance: any[] = [];
 
   constructor(
-    public auth:   AuthService,
+    public auth: AuthService,
     private attSvc: AttendanceService,
     private holSvc: HolidayService,
     private roleSvc: RoleService,
-    private toast:  ToastService,
-    private cdr:    ChangeDetectorRef
-  ) {}
+    private toast: ToastService,
+    private cdr: ChangeDetectorRef
+  ) { }
 
   ngOnInit(): void {
     // load employees and then today's attendance
@@ -354,13 +354,13 @@ export class AdminComponent implements OnInit {
     const role = (this.auth.currentUser?.role ?? '').toLowerCase();
 
     if (role === 'admin' || position === 'general manager') {
-        return 'admin';
+      return 'admin';
     } else if (position === 'manager') {
-        return 'manager';
+      return 'manager';
     }
     return 'employee';
   }
 
-  fmt(d: string)  { return new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
-  bc(s: string)   { return { pending:'badge-pending', approved:'badge-approved', rejected:'badge-rejected' }[s] ?? ''; }
+  fmt(d: string) { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
+  bc(s: string) { return { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected' }[s] ?? ''; }
 }
