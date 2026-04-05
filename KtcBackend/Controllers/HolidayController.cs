@@ -177,17 +177,17 @@ namespace KtcBackend.Controllers
             if (requesterPosition == "manager")
             {
                 req.ManagerStatus = "approved";
-                req.ManagerId = req.EmpId;
+                req.ManagerId = string.IsNullOrWhiteSpace(req.ManagerId) ? req.EmpId : req.ManagerId;
                 req.GMStatus = "pending";
-                req.gm_id = "";
+                req.GMId =  "";
             }
             else
             {
                 req.ManagerStatus = "pending";
-                req.ManagerId = "";
+                 req.ManagerId = req.ManagerId ?? "";
                 // Employee requests do not require GM approval.
                 req.GMStatus = "approved";
-                req.gm_id = "";
+                req.GMId = "";
             }
 
             UpdateOverallStatus(req);
