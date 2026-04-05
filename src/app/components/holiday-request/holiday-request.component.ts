@@ -98,6 +98,7 @@ import { DataStoreService } from '../../services/data-store.service';
 })
 export class HolidayRequestComponent implements OnInit, OnDestroy {
   startDate = '';
+  start_date = '';
   end_date = '';
   reason = '';
   previewDays = 0;
@@ -144,12 +145,13 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
     if (!this.reason.trim()) { this.toast.show('⚠️ Please enter a reason', 'error'); return; }
 
     const payload: Partial<HolidayRequest> = {
-      empId: this.emp.id,
+      emp_id: this.emp.id,
       emp_name: this.emp.name,
-      startDate: this.startDate,
+      startDate: this.start_date,
       end_date: this.end_date,
       days: this.calcDays(this.startDate, this.end_date),
       reason: this.reason.trim()
+
     };
 
     this.holSvc.submit(payload).subscribe({
