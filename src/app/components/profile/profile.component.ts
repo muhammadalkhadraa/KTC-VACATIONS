@@ -100,7 +100,7 @@ import { Employee, HolidayRequest } from '../../models/models';
             <tbody>
               <tr *ngFor="let r of requests">
                 <td>{{ formatDate(r.startDate) }}</td>
-                <td>{{ formatDate(r.endDate) }}</td>
+                <td>{{ formatDate(r.end_date) }}</td>
                 <td>{{ r.days }}</td>
                 <td>{{ r.reason }}</td>
                 <td><span class="badge" [ngClass]="badgeClass(r.status)">{{ r.status }}</span></td>
@@ -119,10 +119,10 @@ export class ProfileComponent implements OnInit {
   emp!: Employee;
   requests: HolidayRequest[] = [];
 
-  constructor(private auth: AuthService, private holSvc: HolidayService) {}
+  constructor(private auth: AuthService, private holSvc: HolidayService) { }
 
   get remaining() { return this.emp.totalHolidays - this.emp.usedHolidays; }
-  get barWidth()  { return Math.round((this.remaining / this.emp.totalHolidays) * 100) + '%'; }
+  get barWidth() { return Math.round((this.remaining / this.emp.totalHolidays) * 100) + '%'; }
 
   ngOnInit(): void {
     const id = this.auth.currentUser!.id;
@@ -134,10 +134,10 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  formatDate(d: string) { return new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
+  formatDate(d: string) { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
 
   badgeClass(s: string) {
-    const m: Record<string,string> = { pending:'badge-pending', approved:'badge-approved', rejected:'badge-rejected' };
+    const m: Record<string, string> = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected' };
     return m[s] ?? '';
   }
 }

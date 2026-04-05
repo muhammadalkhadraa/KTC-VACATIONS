@@ -34,7 +34,7 @@ export interface HolidayRequest {
   empId: string;
   emp_name: string;
   startDate: string;    // 'YYYY-MM-DD'
-  endDate: string;      // 'YYYY-MM-DD'
+  end_date: string;      // 'YYYY-MM-DD'
   days: number;
   reason: string;
   status: 'pending' | 'approved' | 'rejected';

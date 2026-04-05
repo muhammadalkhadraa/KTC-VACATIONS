@@ -79,7 +79,7 @@ import { DataStoreService } from '../../services/data-store.service';
                 <thead><tr><th>Period</th><th>Days</th><th>Status</th><th>Approval</th></tr></thead>
                 <tbody>
                   <tr *ngFor="let r of myRequests">
-                    <td>{{ formatDate(r.startDate) }} – {{ formatDate(r.endDate) }}</td>
+                    <td>{{ formatDate(r.startDate) }} – {{ formatDate(r.end_date) }}</td>
                     <td>{{ r.days }}</td>
                     <td><span class="badge" [ngClass]="badgeClass(r.status)">{{ r.status }}</span></td>
                     <td>{{ approvalText(r) }}</td>

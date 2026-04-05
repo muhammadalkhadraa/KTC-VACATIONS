@@ -47,8 +47,8 @@ import { DataStoreService } from '../../services/data-store.service';
           </div>
 
           <div class="form-group">
-            <label for="endDate">End Date</label>
-            <input id="endDate" name="endDate" type="date" [(ngModel)]="endDate" [min]="startDate || today" (change)="calcPreview()" />
+            <label for="end_date">End Date</label>
+            <input id="end_date" name="end_date" type="date" [(ngModel)]="end_date" [min]="startDate || today" (change)="calcPreview()" />
           </div>
 
           <div class="days-preview" *ngIf="previewDays > 0">
@@ -80,7 +80,7 @@ import { DataStoreService } from '../../services/data-store.service';
               <thead><tr><th>Period</th><th>Days</th><th>Status</th><th>Approval</th></tr></thead>
               <tbody>
                 <tr *ngFor="let r of myRequests">
-                  <td>{{ fmt(r.startDate) }} –<br>{{ fmt(r.endDate) }}</td>
+                  <td>{{ fmt(r.startDate) }} –<br>{{ fmt(r.end_date) }}</td>
                   <td>{{ r.days }}</td>
                   <td><span class="badge" [ngClass]="bc(r.status)">{{ r.status }}</span></td>
                   <td>{{ approvalText(r) }}</td>
@@ -98,7 +98,7 @@ import { DataStoreService } from '../../services/data-store.service';
 })
 export class HolidayRequestComponent implements OnInit, OnDestroy {
   startDate = '';
-  endDate = '';
+  end_date = '';
   reason = '';
   previewDays = 0;
   today = new Date().toISOString().slice(0, 10);
@@ -131,31 +131,31 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
 
 
   calcPreview(): void {
-    if (this.startDate && this.endDate && this.endDate >= this.startDate) {
-      this.previewDays = this.calcDays(this.startDate, this.endDate);
+    if (this.startDate && this.end_date && this.end_date >= this.startDate) {
+      this.previewDays = this.calcDays(this.startDate, this.end_date);
     } else {
       this.previewDays = 0;
     }
   }
 
   submit(): void {
-    if (!this.startDate || !this.endDate) { this.toast.show('⚠️ Please select start and end dates', 'error'); return; }
-    if (this.endDate < this.startDate) { this.toast.show('⚠️ End date must be after start date', 'error'); return; }
+    if (!this.startDate || !this.end_date) { this.toast.show('⚠️ Please select start and end dates', 'error'); return; }
+    if (this.end_date < this.startDate) { this.toast.show('⚠️ End date must be after start date', 'error'); return; }
     if (!this.reason.trim()) { this.toast.show('⚠️ Please enter a reason', 'error'); return; }
 
     const payload: Partial<HolidayRequest> = {
       empId: this.emp.id,
       emp_name: this.emp.name,
       startDate: this.startDate,
-      endDate: this.endDate,
-      days: this.calcDays(this.startDate, this.endDate),
+      end_date: this.end_date,
+      days: this.calcDays(this.startDate, this.end_date),
       reason: this.reason.trim()
     };
 
     this.holSvc.submit(payload).subscribe({
       next: () => {
         this.toast.show('✅ Holiday request submitted!');
-        this.startDate = ''; this.endDate = ''; this.reason = ''; this.previewDays = 0;
+        this.startDate = ''; this.end_date = ''; this.reason = ''; this.previewDays = 0;
         this.store.refresh();
       },
       error: () => this.toast.show('❌ Failed to submit request', 'error')

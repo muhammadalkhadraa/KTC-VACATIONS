@@ -9,7 +9,7 @@ export class HolidayService {
 
   constructor(private supabaseSvc: SupabaseService) { }
 
-  private readonly SELECT_ALL = 'request_id:requestId,emp_id:empId,emp_name:emp_name,start_date:startDate,end_date:endDate,days:days,reason:reason,status:status,manager_status:managerStatus,manager_id:managerId,gm_status:gmStatus,gm_id:gmId,submitted_at:submittedAt';
+  private readonly SELECT_ALL = 'request_id:requestId,emp_id:empId,emp_name:emp_name,start_date:startDate,end_date:end_date,days:days,reason:reason,status:status,manager_status:managerStatus,manager_id:managerId,gm_status:gmStatus,gm_id:gmId,submitted_at:submittedAt';
 
   getForEmployee(empId: string): Observable<HolidayRequest[]> {
     if (!empId) return of([]);
@@ -38,7 +38,7 @@ export class HolidayService {
       empId: req.empId,
       emp_name: req.emp_name,
       start_date: req.startDate,
-      end_date: req.endDate,
+      end_date: req.end_date,
       days: req.days,
       reason: req.reason,
       submitted_at: new Date().toISOString(),

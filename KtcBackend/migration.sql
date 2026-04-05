@@ -32,7 +32,7 @@ CREATE TABLE "HolidayRequests" (
     "EmpId" text NOT NULL,
     "EmpName" text NOT NULL,
     "StartDate" timestamp with time zone NOT NULL,
-    "EndDate" timestamp with time zone NOT NULL,
+    "end_date" timestamp with time zone NOT NULL,
     "Days" integer NOT NULL,
     "Reason" text,
     "ManagerId" text NOT NULL,
