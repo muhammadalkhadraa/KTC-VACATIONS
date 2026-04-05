@@ -35,7 +35,7 @@ export class HolidayService {
 
   submit(req: Partial<HolidayRequest>): Observable<HolidayRequest> {
     const newReq = {
-      empId: req.empId,
+      emp_id: req.empId,
       emp_name: req.emp_name,
       start_date: req.startDate,
       end_date: req.end_date,
