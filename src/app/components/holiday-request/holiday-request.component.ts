@@ -145,7 +145,7 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
     if (!this.reason.trim()) { this.toast.show('⚠️ Please enter a reason', 'error'); return; }
 
     const payload: Partial<HolidayRequest> = {
-      emp_id: this.emp.id,
+      empId: this.emp.id,
       emp_name: this.emp.name,
       start_date: this.start_date,
       end_date: this.end_date,
