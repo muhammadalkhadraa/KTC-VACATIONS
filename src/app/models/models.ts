@@ -43,7 +43,7 @@ export interface HolidayRequest {
   gmStatus: 'pending' | 'approved' | 'rejected';
   gmId: string;
   submittedAt: string;
-  manager_id: number; // ISO date string
+  manager_id: number;
 }
 
 export interface Role {
