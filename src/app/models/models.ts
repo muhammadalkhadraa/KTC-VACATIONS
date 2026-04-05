@@ -32,7 +32,7 @@ export interface AttendanceRecord {
 export interface HolidayRequest {
   requestId: number;
   empId: string;
-  empName: string;
+  emp_name: string;
   startDate: string;    // 'YYYY-MM-DD'
   endDate: string;      // 'YYYY-MM-DD'
   days: number;
