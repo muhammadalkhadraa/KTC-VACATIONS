@@ -5,7 +5,7 @@ import { AttendanceRecord, CheckInStatus } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
-  constructor(private supabaseSvc: SupabaseService) {}
+  constructor(private supabaseSvc: SupabaseService) { }
 
   private readonly SELECT_ALL = 'id, emp_id:empId, state, check_in_time:checkInTime, check_out_time:checkOutTime';
 
