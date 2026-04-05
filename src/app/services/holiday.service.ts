@@ -44,7 +44,8 @@ export class HolidayService {
       submitted_at: new Date().toISOString(),
       status: 'pending',
       manager_status: 'pending',
-      gm_status: 'pending'
+      gm_status: 'pending',
+      manager_id: req.managerId
     };
     return from(this.supabaseSvc.supabase.from('holiday_requests').insert([newReq]).select(this.SELECT_ALL).single()).pipe(
       map(({ data }) => {
