@@ -35,7 +35,7 @@ export class HolidayService {
 
   submit(req: Partial<HolidayRequest>): Observable<HolidayRequest> {
     const newReq = {
-      empId: req.emp_id,
+      empId: req.empId,
       emp_name: req.emp_name,
       start_date: req.startDate,
       end_date: req.end_date,
@@ -50,7 +50,7 @@ export class HolidayService {
     return from(this.supabaseSvc.supabase.from('holiday_requests').insert([newReq]).select(this.SELECT_ALL).single()).pipe(
       map(({ data }) => {
         const created = data as unknown as HolidayRequest;
-        const id = created.emp_id.toUpperCase();
+        const id = created.empId.toUpperCase();
         const existing = this.cache.get(id) ?? [];
         this.cache.set(id, [...existing, created]);
         return created;
