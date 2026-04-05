@@ -212,11 +212,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   approvalText(req: HolidayRequest): string {
     console.log(req)
-    if (req.managerStatus === 'rejected') return `Rejected by manager (ID: ${req.managerId})`;
+    if (req.managerStatus === 'rejected') return `Rejected by manager (ID: ${req.manager_id})`;
     if (req.gmStatus === 'rejected') return `Rejected by general manager (ID: ${req.gmId})`;
     if (req.managerStatus === 'pending') return 'Waiting for manager approval';
-    if (req.managerStatus === 'approved' && req.gmStatus === 'pending') return `Approved by manager (ID: ${req.managerId}), waiting for general manager`;
-    if (req.managerStatus === 'approved' && req.gmStatus === 'approved') return `Approved by manager (ID: ${req.managerId}) and general manager (ID: ${req.gmId})`;
+    if (req.managerStatus === 'approved' && req.gmStatus === 'pending') return `Approved by manager (ID: ${req.manager_id}), waiting for general manager`;
+    if (req.managerStatus === 'approved' && req.gmStatus === 'approved') return `Approved by manager (ID: ${req.manager_id}) and general manager (ID: ${req.gmId})`;
     return '';
   }
 
