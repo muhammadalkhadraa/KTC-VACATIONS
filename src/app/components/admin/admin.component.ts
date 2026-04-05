@@ -74,7 +74,7 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
                 <tr *ngFor="let r of pending">
                   <td>{{ r.emp_name }}</td>
                   <td>{{ r.empId }}</td>
-                  <td>{{ fmt(r.startDate) }} – {{ fmt(r.endDate) }}</td>
+                  <td>{{ fmt(r.startDate) }} – {{ fmt(r.end_date) }}</td>
                   <td>{{ r.days }}</td>
                   <td class="reason-cell">{{ r.reason }}</td>
                   <td>
@@ -97,7 +97,7 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
             <tbody>
               <tr *ngFor="let r of allRequests">
                 <td>{{ r.emp_name }}</td>
-                <td>{{ fmt(r.startDate) }} – {{ fmt(r.endDate) }}</td>
+                <td>{{ fmt(r.startDate) }} – {{ fmt(r.end_date) }}</td>
                 <td>{{ r.days }}</td>
                 <td><span class="badge" [ngClass]="bc(r.status)">{{ r.status }}</span></td>
                 <td>{{ fmt(r.submittedAt.slice(0,10)) }}</td>
