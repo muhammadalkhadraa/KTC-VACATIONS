@@ -20,7 +20,7 @@ export class HolidayService {
       this.supabaseSvc.supabase
         .from('holiday_requests')
         .select(this.SELECT_ALL)
-        .eq('emp_id', id)
+        .eq('empId', id)
         .order('submitted_at', { ascending: false })
     ).pipe(
       map(({ data }) => {
@@ -37,8 +37,8 @@ export class HolidayService {
     const newReq = {
       empId: req.empId,
       emp_name: req.emp_name,
-      start_date: req.startDate,
-      end_date: req.end_date,
+      start_date: req.startDate || new Date().toISOString(),
+      end_date: req.end_date || new Date().toISOString(),
       days: req.days,
       reason: req.reason,
       submitted_at: new Date().toISOString(),
