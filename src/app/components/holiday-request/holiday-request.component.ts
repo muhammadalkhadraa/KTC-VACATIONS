@@ -147,7 +147,7 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
     const payload: Partial<HolidayRequest> = {
       empId: this.emp.id,
       emp_name: this.emp.name,
-      start_date: this.start_date,
+      startDate: this.start_date,
       end_date: this.end_date,
       days: this.calcDays(this.startDate, this.end_date),
       reason: this.reason.trim()
