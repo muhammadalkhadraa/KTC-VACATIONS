@@ -7,7 +7,7 @@ import { HolidayRequest } from '../models/models';
 export class HolidayService {
   private cache = new Map<string, HolidayRequest[]>();
 
-  constructor(private supabaseSvc: SupabaseService) {}
+  constructor(private supabaseSvc: SupabaseService) { }
 
   private readonly SELECT_ALL = 'request_id:requestId,emp_id:empId,emp_name:empName,start_date:startDate,end_date:endDate,days:days,reason:reason,status:status,manager_status:managerStatus,manager_id:managerId,gm_status:gmStatus,gm_id:gmId,submitted_at:submittedAt';
 
@@ -35,7 +35,7 @@ export class HolidayService {
 
   submit(req: Partial<HolidayRequest>): Observable<HolidayRequest> {
     const newReq = {
-      emp_id: req.empId,
+      empId: req.empId,
       emp_name: req.empName,
       start_date: req.startDate,
       end_date: req.endDate,
@@ -86,7 +86,7 @@ export class HolidayService {
     } else if (approverRole === 'general manager') {
       update.gm_status = 'approved';
       update.gm_id = approverId;
-      update.status = 'approved'; 
+      update.status = 'approved';
     }
 
     return from(this.supabaseSvc.supabase.from('holiday_requests').update(update).eq('request_id', id).select(this.SELECT_ALL).single()).pipe(
