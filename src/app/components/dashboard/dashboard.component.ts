@@ -49,9 +49,9 @@ import { DataStoreService } from '../../services/data-store.service';
             <div class="stat-num">{{ summary.late }}</div>
             <div class="stat-label">Late Days</div>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" [ngClass]="{'red': remainingHolidays < 0}">
             <div class="stat-num">{{ remainingHolidays }}</div>
-            <div class="stat-label">Holidays Left</div>
+            <div class="stat-label">{{ remainingHolidays < 0 ? 'Days Exceeded (Negative)' : 'Holidays Left' }}</div>
           </div>
         </div>
 
