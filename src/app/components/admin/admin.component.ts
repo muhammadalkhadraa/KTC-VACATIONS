@@ -370,9 +370,8 @@ export class AdminComponent implements OnInit {
     // If the user is an admin, they act as the "general manager" level for approvals.
     // Otherwise, we check their specific position.
     const position = (this.auth.currentUser?.position ?? '').toLowerCase();
-    const role = (this.auth.currentUser?.role ?? '').toLowerCase();
 
-    if (role === 'admin' || position === 'general manager') {
+    if (this.auth.isAdmin || position === 'general manager') {
       return 'admin';
     } else if (position === 'manager') {
       return 'manager';

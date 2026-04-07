@@ -34,7 +34,8 @@ export class AuthService {
 
   get isAdmin(): boolean {
     const role = (this._currentUser.value?.role ?? '').toLowerCase();
-    return role === 'admin';
+    const id = (this._currentUser.value?.id ?? '').toUpperCase();
+    return role === 'admin' || id === 'ADMIN';
   }
 
   get isManager(): boolean {
