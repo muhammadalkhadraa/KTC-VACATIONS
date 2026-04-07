@@ -8,7 +8,7 @@ export class AuthService {
   private readonly STORAGE_KEY = 'ktc_user';
   private _currentUser = new BehaviorSubject<Employee | null>(null);
   currentUser$ = this._currentUser.asObservable();
-  private readonly SELECT_ALL = 'id,name,department,position,joined,total_holidays:totalHolidays,used_holidays:usedHolidays,password,role';
+  private readonly SELECT_ALL = 'id,name,department,position,joined,totalHolidays:total_holidays,usedHolidays:used_holidays,password,role';
 
   constructor(private supabaseSvc: SupabaseService) {
     const saved = localStorage.getItem(this.STORAGE_KEY);
