@@ -268,8 +268,11 @@ export class AdminComponent implements OnInit {
     const { id: approverId } = this.auth.currentUser!;
     const approverRole = this.getApproverRole();
     this.holSvc.approve(id, approverId, approverRole).subscribe({
-      next: () => {
+      next: (updatedReq) => {
         this.toast.show('✅ Request approved!');
+        if (updatedReq.status === 'approved') {
+          this.auth.addUsedHolidays(updatedReq.empId, updatedReq.days).subscribe();
+        }
         this.refreshRequests();
       },
       error: err => {
