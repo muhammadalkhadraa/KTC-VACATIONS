@@ -39,34 +39,50 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
     <div class="page-wrapper">
       <h1 class="page-title">⚙️ Admin <span>Panel</span></h1>
 
+      <!-- Role Badge -->
+      <div style="margin-bottom:16px;">
+        <span class="badge" [ngClass]="{
+          'badge-approved': approverRole === 'admin',
+          'badge-pending':  approverRole === 'manager',
+          'badge-rejected': approverRole === 'employee'
+        }" style="font-size:.88rem; padding:6px 14px;">
+          {{ approverRole === 'admin' ? '🏛️ Acting as: General Manager / Admin'
+           : approverRole === 'manager' ? '👔 Acting as: Manager'
+           : '👤 Employee View' }}
+        </span>
+      </div>
+
       <!-- Quick Stats -->
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-num">{{ employees.length }}</div><div class="stat-label">Total Employees</div></div>
         <div class="stat-card yellow"><div class="stat-num">{{ pending.length }}</div><div class="stat-label">Pending Requests</div></div>
-        <div class="stat-card green"><div class="stat-num">{{ employees.length - 1 }}</div><div class="stat-label">Present Today</div></div>
-        <div class="stat-card red"><div class="stat-num">1</div><div class="stat-label">Absent Today</div></div>
+        <div class="stat-card green"><div class="stat-num">{{ approved.length }}</div><div class="stat-label">Approved</div></div>
+        <div class="stat-card red"><div class="stat-num">{{ rejected.length }}</div><div class="stat-label">Rejected</div></div>
+        <div class="stat-card" *ngIf="auth.isAdmin"><div class="stat-num">{{ employees.length }}</div><div class="stat-label">Total Employees</div></div>
       </div>
 
       <!-- Tabs -->
       <div class="tab-bar">
         <button class="tab" [class.active]="tab==='requests'" (click)="tab='requests'">
-          🏖️ Holiday Requests <span *ngIf="pending.length">({{ pending.length }} pending)</span>
+          🏖️ Pending Requests <span *ngIf="pending.length">({{ pending.length }})</span>
         </button>
-        <button class="tab" [class.active]="tab==='attendance'" (click)="tab='attendance'">
+        <button class="tab" [class.active]="tab==='history'" (click)="tab='history'">
+          📜 History
+        </button>
+        <button class="tab" [class.active]="tab==='attendance'" (click)="tab='attendance'" *ngIf="auth.isAdmin">
           📋 Today's Attendance
         </button>
-        <button class="tab" [class.active]="tab==='employees'" (click)="tab='employees'">
+        <button class="tab" [class.active]="tab==='employees'" (click)="tab='employees'" *ngIf="auth.isAdmin">
           👥 Users
         </button>
-        <button class="tab" [class.active]="tab==='roles'" (click)="tab='roles'">
+        <button class="tab" [class.active]="tab==='roles'" (click)="tab='roles'" *ngIf="auth.isAdmin">
           🛠️ Roles
         </button>
       </div>
 
-      <!-- ─── Holiday Requests Tab ─── -->
+      <!-- ─── Pending Requests Tab ─── -->
       <div *ngIf="tab==='requests'">
         <div class="card">
-          <div class="card-title">🟡 Pending Requests</div>
+          <div class="card-title">🟡 Pending Requests Awaiting Your Action</div>
           <ng-container *ngIf="pending.length; else noPending">
             <table class="admin-table">
               <thead><tr><th>Employee</th><th>ID</th><th>Period</th><th>Days</th><th>Reason</th><th>Action</th></tr></thead>
@@ -86,12 +102,15 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
             </table>
           </ng-container>
           <ng-template #noPending>
-            <div class="empty-state"><span class="emoji">🎉</span>All requests have been handled!</div>
+            <div class="empty-state"><span class="emoji">🎉</span>No pending requests for your level!</div>
           </ng-template>
         </div>
+      </div>
 
-        <div class="card">
-          <div class="card-title">📜 All Requests History</div>
+      <!-- ─── History Tab ─── -->
+      <div *ngIf="tab==='history'" class="card">
+        <div class="card-title">📜 All Requests History</div>
+        <ng-container *ngIf="allRequests.length; else noHistory">
           <table class="admin-table">
             <thead><tr><th>Employee</th><th>Period</th><th>Days</th><th>Status</th><th>Submitted</th></tr></thead>
             <tbody>
@@ -100,15 +119,18 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
                 <td>{{ fmt(r.startDate) }} – {{ fmt(r.end_date) }}</td>
                 <td>{{ r.days }}</td>
                 <td><span class="badge" [ngClass]="bc(r.status)">{{ r.status }}</span></td>
-                <td>{{ fmt(r.submittedAt.slice(0,10)) }}</td>
+                <td>{{ r.submittedAt ? fmt(r.submittedAt.slice(0,10)) : '—' }}</td>
               </tr>
             </tbody>
           </table>
-        </div>
+        </ng-container>
+        <ng-template #noHistory>
+          <div class="empty-state"><span class="emoji">📭</span>No requests found.</div>
+        </ng-template>
       </div>
 
-      <!-- ─── Attendance Tab ─── -->
-      <div *ngIf="tab==='attendance'" class="card">
+      <!-- ─── Attendance Tab (Admin only) ─── -->
+      <div *ngIf="tab==='attendance' && auth.isAdmin" class="card">
         <div class="card-title">📋 All Employees – Today's Attendance</div>
         <table class="admin-table">
           <thead><tr><th>Name</th><th>ID</th><th>Department</th><th>Status</th><th>Check In</th><th>Check Out</th></tr></thead>
@@ -125,8 +147,8 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
         </table>
       </div>
 
-      <!-- ─── Roles Tab ─── -->
-      <div *ngIf="tab==='roles'" class="card">
+      <!-- ─── Roles Tab (Admin only) ─── -->
+      <div *ngIf="tab==='roles' && auth.isAdmin" class="card">
         <div class="card-title">🛠️ Manage Roles</div>
         <div class="form-group" style="margin-bottom:16px;">
           <label for="newRoleName">New role</label>
@@ -152,8 +174,8 @@ import { HolidayRequest, Employee, AttendanceRecord, Role } from '../../models/m
         </ng-template>
       </div>
 
-      <!-- ─── Employees Tab ─── -->
-      <div *ngIf="tab==='employees'" class="card">
+      <!-- ─── Employees Tab (Admin only) ─── -->
+      <div *ngIf="tab==='employees' && auth.isAdmin" class="card">
         <div class="card-title">👥 User Directory</div>
         <table class="admin-table">
           <thead><tr><th>Name</th><th>ID</th><th>Department</th><th>Position</th><th>Role</th><th>Holidays Used</th><th>Remaining</th></tr></thead>
@@ -188,12 +210,15 @@ export class AdminComponent implements OnInit {
   tab = 'requests';
   employees: Employee[] = [];
   roles: Role[] = [];
-  accessRoles = ['employee', 'admin'];
+  accessRoles = ['employee', 'manager', 'general manager', 'admin'];
   jobPositions = ['employee', 'manager', 'general manager'];
   newRoleName = '';
   allRequests: HolidayRequest[] = [];
   pending: HolidayRequest[] = [];
+  approved: HolidayRequest[] = [];
+  rejected: HolidayRequest[] = [];
   todayAttendance: any[] = [];
+  approverRole = 'employee';
 
   constructor(
     public auth: AuthService,
@@ -205,41 +230,37 @@ export class AdminComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    // load employees and then today's attendance
-    this.auth.getAllEmployees().subscribe(list => {
-      // show all users, including admins, so admins can be demoted/changed
-      this.employees = list;
-      // once we have employee ids, fetch today's statuses
-      this.attSvc.getToday().subscribe(statuses => {
-        // map by empId for quick lookup
-        const map = new Map(statuses.map(s => [s.empId, s]));
-        this.todayAttendance = this.employees.map(e => {
-          const stat = map.get(e.id);
-          return {
-            name: e.name, id: e.id, dept: e.department,
-            status: stat?.state === 'out' ? 'Present' : stat?.state === 'in' ? 'Present' : 'Absent',
-            in: stat?.checkInTime ?? '—',
-            out: stat?.checkOutTime ?? '—'
-          };
+    this.approverRole = this.getApproverRole();
+
+    // Only load employee list and attendance for admins
+    if (this.auth.isAdmin) {
+      this.auth.getAllEmployees().subscribe(list => {
+        this.employees = list;
+        this.attSvc.getToday().subscribe(statuses => {
+          const map = new Map(statuses.map(s => [s.empId, s]));
+          this.todayAttendance = this.employees.map(e => {
+            const stat = map.get(e.id);
+            return {
+              name: e.name, id: e.id, dept: e.department,
+              status: stat?.state === 'out' ? 'Present' : stat?.state === 'in' ? 'Present' : 'Absent',
+              in: stat?.checkInTime ?? '—',
+              out: stat?.checkOutTime ?? '—'
+            };
+          });
         });
       });
-    });
+      this.roleSvc.getAll().subscribe(roles => { this.roles = roles; });
+    }
 
-    const pendingRole = this.getApproverRole();
-
-    this.holSvc.getPending(pendingRole).subscribe(reqs => {
+    this.holSvc.getPending(this.approverRole).subscribe(reqs => {
       this.pending = reqs;
-      this.allRequests = reqs;
       this.cdr.detectChanges();
     });
     this.holSvc.getAll().subscribe(reqs => {
       this.allRequests = reqs;
+      this.approved = reqs.filter(r => r.status === 'approved');
+      this.rejected = reqs.filter(r => r.status === 'rejected');
       this.cdr.detectChanges();
-    });
-
-    // load roles list for the new Roles tab
-    this.roleSvc.getAll().subscribe(roles => {
-      this.roles = roles;
     });
   }
 
@@ -335,15 +356,13 @@ export class AdminComponent implements OnInit {
   }
 
   private refreshRequests() {
-    const pendingRole = this.getApproverRole();
-
-    this.holSvc.getPending(pendingRole).subscribe(reqs => {
+    this.holSvc.getPending(this.approverRole).subscribe(reqs => {
       this.pending = reqs;
-      // keep the history view in sync; pending are part of history
-      this.allRequests = [...reqs, ...this.allRequests.filter(r => r.status !== 'pending')];
     });
     this.holSvc.getAll().subscribe(reqs => {
       this.allRequests = reqs;
+      this.approved = reqs.filter(r => r.status === 'approved');
+      this.rejected = reqs.filter(r => r.status === 'rejected');
     });
   }
 

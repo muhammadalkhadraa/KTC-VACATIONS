@@ -33,11 +33,19 @@ export class AuthService {
   }
 
   get isAdmin(): boolean {
-    return this._currentUser.value?.role === 'Admin';
+    const role = (this._currentUser.value?.role ?? '').toLowerCase();
+    return role === 'admin';
   }
 
   get isManager(): boolean {
-    return this._currentUser.value?.role === 'Manager';
+    const role = (this._currentUser.value?.role ?? '').toLowerCase();
+    const position = (this._currentUser.value?.position ?? '').toLowerCase();
+    return role === 'manager' || role === 'admin' || position === 'manager' || position === 'general manager';
+  }
+
+  get isGeneralManager(): boolean {
+    const position = (this._currentUser.value?.position ?? '').toLowerCase();
+    return position === 'general manager';
   }
 
   login(empId: string, password: string): Observable<Employee> {
@@ -59,8 +67,8 @@ export class AuthService {
           department: user.department,
           position: user.position,
           joined: user.joined,
-          totalHolidays: user.totalHolidays,
-          usedHolidays: user.usedHolidays,
+          totalHolidays: user.total_holidays ?? user.totalHolidays ?? 21,
+          usedHolidays: user.used_holidays ?? user.usedHolidays ?? 0,
           password: '',
           role: user.role
         };

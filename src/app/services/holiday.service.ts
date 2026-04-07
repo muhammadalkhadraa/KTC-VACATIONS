@@ -9,7 +9,7 @@ export class HolidayService {
 
   constructor(private supabaseSvc: SupabaseService) { }
 
-  private readonly SELECT_ALL = 'request_id:request_id,empId:empId,emp_name:emp_name,start_date:start_date,end_date:end_date,days:days,reason:reason,status:status,manager_status:manager_status,manager_id:manager_id,gm_status:gm_status,gm_id:gm_id,submitted_at:submitted_at';
+  private readonly SELECT_ALL = 'requestId:request_id,empId:empId,emp_name:emp_name,startDate:start_date,end_date:end_date,days:days,reason:reason,status:status,manager_status:manager_status,manager_id:manager_id,gm_status:gm_status,gm_id:gm_id,submittedAt:submitted_at';
 
   getForEmployee(empId: string): Observable<HolidayRequest[]> {
     if (!empId) return of([]);
@@ -69,8 +69,10 @@ export class HolidayService {
     let query = this.supabaseSvc.supabase.from('holiday_requests').select(this.SELECT_ALL).eq('status', 'pending');
 
     if (role === 'manager') {
+      // Manager sees requests where manager hasn't acted yet
       query = query.eq('manager_status', 'pending');
-    } else if (role === 'general manager') {
+    } else if (role === 'general manager' || role === 'admin') {
+      // GM / Admin sees requests where manager approved but GM hasn't acted yet
       query = query.eq('manager_status', 'approved').eq('gm_status', 'pending');
     }
 
@@ -84,7 +86,7 @@ export class HolidayService {
     if (approverRole === 'manager') {
       update.manager_status = 'approved';
       update.manager_id = approverId;
-    } else if (approverRole === 'general manager') {
+    } else if (approverRole === 'general manager' || approverRole === 'admin') {
       update.gm_status = 'approved';
       update.gm_id = approverId;
       update.status = 'approved';
@@ -100,7 +102,7 @@ export class HolidayService {
     if (approverRole === 'manager') {
       update.manager_status = 'rejected';
       update.manager_id = approverId;
-    } else if (approverRole === 'general manager') {
+    } else if (approverRole === 'general manager' || approverRole === 'admin') {
       update.gm_status = 'rejected';
       update.gm_id = approverId;
     }

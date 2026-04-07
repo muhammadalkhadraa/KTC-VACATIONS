@@ -147,11 +147,10 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
     const payload: Partial<HolidayRequest> = {
       empId: this.emp.id,
       emp_name: this.emp.name,
-      startDate: this.start_date,
+      startDate: this.startDate,
       end_date: this.end_date,
       days: this.calcDays(this.startDate, this.end_date),
       reason: this.reason.trim()
-
     };
 
     this.holSvc.submit(payload).subscribe({
@@ -167,20 +166,20 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
   fmt(d: string) { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
 
   approvalText(req: HolidayRequest): string {
-    if (req.managerStatus === 'rejected') {
+    if (req.manager_status === 'rejected') {
       return `Rejected by manager (ID: ${req.manager_id})`;
     }
-    if (req.gmStatus === 'rejected') {
-      return `Rejected by general manager (ID: ${req.gmId})`;
+    if (req.gm_status === 'rejected') {
+      return `Rejected by general manager (ID: ${req.gm_id})`;
     }
-    if (req.managerStatus === 'pending') {
+    if (req.manager_status === 'pending') {
       return 'Waiting for manager approval';
     }
-    if (req.managerStatus === 'approved' && req.gmStatus === 'pending') {
+    if (req.manager_status === 'approved' && req.gm_status === 'pending') {
       return `Approved by manager (ID: ${req.manager_id}), waiting for general manager`;
     }
-    if (req.managerStatus === 'approved' && req.gmStatus === 'approved') {
-      return `Approved by manager (ID: ${req.manager_id}) and general manager (ID: ${req.gmId})`;
+    if (req.manager_status === 'approved' && req.gm_status === 'approved') {
+      return `Fully approved ✅`;
     }
     return '';
   }

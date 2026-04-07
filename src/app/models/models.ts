@@ -33,17 +33,16 @@ export interface HolidayRequest {
   requestId: number;
   empId: string;
   emp_name: string;
-  startDate: string;    // 'YYYY-MM-DD'
-  end_date: string;      // 'YYYY-MM-DD'
+  startDate: string;    // aliased from start_date
+  end_date: string;     // 'YYYY-MM-DD'
   days: number;
   reason: string;
   status: 'pending' | 'approved' | 'rejected';
-  managerStatus: 'pending' | 'approved' | 'rejected';
-  managerId: string;
-  gmStatus: 'pending' | 'approved' | 'rejected';
-  gmId: string;
-  submittedAt: string;
-  manager_id: number;
+  manager_status: 'pending' | 'approved' | 'rejected';
+  manager_id: string;
+  gm_status: 'pending' | 'approved' | 'rejected';
+  gm_id: string;
+  submittedAt: string;  // aliased from submitted_at
 }
 
 export interface Role {

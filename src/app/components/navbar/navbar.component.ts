@@ -79,7 +79,7 @@ import { AuthService } from '../../services/auth.service';
         <a class="nav-link" routerLink="/attendance"      routerLinkActive="active">Attendance</a>
         <a class="nav-link" routerLink="/profile"         routerLinkActive="active">Profile</a>
         <a class="nav-link" routerLink="/holiday-request" routerLinkActive="active">Holiday Request</a>
-        <a class="nav-link" routerLink="/admin"           routerLinkActive="active" *ngIf="auth.isAdmin">Admin Panel</a>
+        <a class="nav-link" routerLink="/admin"           routerLinkActive="active" *ngIf="auth.isAdmin || auth.isManager">Admin Panel</a>
       </div>
 
       <div class="user-area">
