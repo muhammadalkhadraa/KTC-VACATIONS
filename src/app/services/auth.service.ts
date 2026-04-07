@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, from, map, Observable, of } from 'rxjs';
+import { BehaviorSubject, from, map, Observable, of, tap } from 'rxjs';
 import { SupabaseService } from './supabase.service';
 import { Employee } from '../models/models';
 
@@ -14,11 +14,22 @@ export class AuthService {
     const saved = localStorage.getItem(this.STORAGE_KEY);
     if (saved) {
       try {
-        this._currentUser.next(JSON.parse(saved));
+        const user = JSON.parse(saved);
+        this._currentUser.next(user);
+        this.refreshCurrentUser(user.id);
       } catch {
         localStorage.removeItem(this.STORAGE_KEY);
       }
     }
+  }
+
+  refreshCurrentUser(id: string) {
+    this.getEmployeeById(id).subscribe({
+      next: (emp) => {
+        this._currentUser.next(emp);
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(emp));
+      }
+    });
   }
 
   getCurrentUser(): Employee | null {
@@ -117,8 +128,8 @@ export class AuthService {
           department: user.department,
           position: user.position,
           joined: user.joined,
-          totalHolidays: user.total_holidays,
-          usedHolidays: user.used_holidays,
+          totalHolidays: user.totalHolidays,
+          usedHolidays: user.usedHolidays,
           password: '',
           role: user.role
         } as Employee;
@@ -152,6 +163,13 @@ export class AuthService {
   /** Update used holidays after an approval */
   addUsedHolidays(empId: string, days: number) {
     const id = empId.trim().toUpperCase();
-    return from(this.supabaseSvc.supabase.rpc('increment_used_holidays', { emp_id: id, days_count: days }));
+    return from(this.supabaseSvc.supabase.rpc('increment_used_holidays', { emp_id: id, days_count: days })).pipe(
+      tap(() => {
+        const current = this._currentUser.value;
+        if (current && current.id.toUpperCase() === id) {
+          this.refreshCurrentUser(current.id);
+        }
+      })
+    );
   }
 }
