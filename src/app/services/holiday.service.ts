@@ -71,9 +71,11 @@ export class HolidayService {
     if (role === 'manager') {
       // Manager sees requests where manager hasn't acted yet
       query = query.eq('manager_status', 'pending');
-    } else if (role === 'general manager' || role === 'admin') {
-      // GM / Admin sees requests where manager approved but GM hasn't acted yet
+    } else if (role === 'general manager') {
+      // GM sees requests where manager approved but GM hasn't acted yet
       query = query.eq('manager_status', 'approved').eq('gm_status', 'pending');
+    } else if (role === 'admin') {
+      // Admin sees ALL pending requests system-wide (no additional manager_status filtering required)
     }
 
     return from(query.order('submitted_at', { ascending: false })).pipe(
@@ -86,7 +88,14 @@ export class HolidayService {
     if (approverRole === 'manager') {
       update.manager_status = 'approved';
       update.manager_id = approverId;
-    } else if (approverRole === 'general manager' || approverRole === 'admin') {
+    } else if (approverRole === 'general manager') {
+      update.gm_status = 'approved';
+      update.gm_id = approverId;
+      update.status = 'approved';
+    } else if (approverRole === 'admin') {
+      // Admin forces full approval
+      update.manager_status = 'approved';
+      update.manager_id = approverId;
       update.gm_status = 'approved';
       update.gm_id = approverId;
       update.status = 'approved';
@@ -102,7 +111,13 @@ export class HolidayService {
     if (approverRole === 'manager') {
       update.manager_status = 'rejected';
       update.manager_id = approverId;
-    } else if (approverRole === 'general manager' || approverRole === 'admin') {
+    } else if (approverRole === 'general manager') {
+      update.gm_status = 'rejected';
+      update.gm_id = approverId;
+    } else if (approverRole === 'admin') {
+      // Admin forces full rejection
+      update.manager_status = 'rejected';
+      update.manager_id = approverId;
       update.gm_status = 'rejected';
       update.gm_id = approverId;
     }
