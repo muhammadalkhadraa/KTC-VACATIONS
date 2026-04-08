@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   styles: [`
     .login-page {
       min-height: 100vh;
@@ -90,28 +91,27 @@ import { ToastService } from '../../services/toast.service';
     <div class="login-page">
       <div class="card">
         <div class="logo">KT<span>C</span></div>
-        <div class="subtitle">Kazareen Textile Company</div>
-        <h2>Employee Portal Login</h2>
+        <div class="subtitle">{{ 'LOGIN.SUBTITLE' | translate }}</div>
+        <h2>{{ 'LOGIN.HEADER' | translate }}</h2>
 
         <div class="form-group">
-          <label for="empId">Employee ID</label>
+          <label for="empId">{{ 'LOGIN.EMP_ID' | translate }}</label>
           <input id="empId" name="empId" type="text" [(ngModel)]="empId" placeholder="e.g. EMP001" (keyup.enter)="login()" />
         </div>
 
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password">{{ 'LOGIN.PASSWORD' | translate }}</label>
           <input id="password" name="password" type="password" [(ngModel)]="password" placeholder="Enter your password" (keyup.enter)="login()" />
         </div>
 
-        <button class="btn" (click)="login()">Login →</button>
+        <button class="btn" (click)="login()">{{ 'LOGIN.LOGIN_BTN' | translate }}</button>
 
         <hr class="divider">
         <p class="note">
-          <strong>Note:</strong> credentials are validated against the server database.<br>
-          use the seeded accounts (EMP001/1234 or ADMIN/admin) or create your own via SQL.
+          <strong>{{ 'LOGIN.NOTE_TITLE' | translate }}</strong> {{ 'LOGIN.NOTE_BODY' | translate }}
         </p>
         <p class="note">
-          Don't have an account? <a (click)="gotoRegister()">Register here</a>.
+          {{ 'LOGIN.NO_ACCOUNT' | translate }} <a (click)="gotoRegister()">{{ 'LOGIN.REGISTER_LINK' | translate }}</a>.
         </p>
       </div>
     </div>
@@ -122,23 +122,24 @@ export class LoginComponent {
   password = '';
 
   constructor(
-    private auth:   AuthService,
-    private toast:  ToastService,
-    private router: Router
+    private auth:      AuthService,
+    private toast:     ToastService,
+    private router:    Router,
+    private translate: TranslateService
   ) {}
 
   gotoRegister() { this.router.navigate(['/register']); }
 
   login(): void {
     if (!this.empId || !this.password) {
-      this.toast.show('⚠️ Please fill in all fields', 'error'); return;
+      this.toast.show(this.translate.instant('LOGIN.ERROR_FILL'), 'error'); return;
     }
     this.auth.login(this.empId.trim(), this.password.trim()).subscribe(res => {
       if (res) {
-        this.toast.show('✅ Welcome, ' + this.auth.currentUser!.name + '!');
+        this.toast.show(this.translate.instant('LOGIN.WELCOME') + ', ' + this.auth.currentUser!.name + '!');
         this.router.navigate(['/dashboard']);
       } else {
-        this.toast.show('❌ Invalid Employee ID or Password', 'error');
+        this.toast.show(this.translate.instant('LOGIN.ERROR_INVALID'), 'error');
       }
     });
   }

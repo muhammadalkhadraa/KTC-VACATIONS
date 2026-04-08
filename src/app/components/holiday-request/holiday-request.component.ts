@@ -2,17 +2,18 @@ import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, NavigationEnd } from '@angular/router';
-import { Subscription, filter, merge } from 'rxjs';
+import { Subscription, filter } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 import { HolidayService } from '../../services/holiday.service';
 import { ToastService } from '../../services/toast.service';
-import { HolidayRequest, Employee } from '../../models/models';
+import { HolidayRequest } from '../../models/models';
 import { DataStoreService } from '../../services/data-store.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-holiday-request',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   styles: [`
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
     @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
@@ -30,66 +31,73 @@ import { DataStoreService } from '../../services/data-store.service';
   `],
   template: `
     <div class="page-wrapper">
-      <h1 class="page-title">✈️ Holiday <span>Request</span></h1>
+      <h1 class="page-title">✈️ {{ 'HOLIDAY_REQUEST.TITLE' | translate | slice:0:-8 }} <span>{{ 'HOLIDAY_REQUEST.REQUEST_SPAN' | translate }}</span></h1>
 
       <div class="two-col">
         <!-- Submit form -->
-        <div class="card">
-          <div class="card-title">📝 Submit New Request</div>
+        <div class="card" *ngIf="!auth.isGeneralManager; else adminNote">
+          <div class="card-title">{{ 'HOLIDAY_REQUEST.SUBMIT_TITLE' | translate }}</div>
 
           <div class="balance-pill">
-            🏖️ Remaining Balance: <strong>{{ remaining }} days</strong>
+            {{ 'HOLIDAY_REQUEST.REMAINING_BALANCE' | translate }} <strong>{{ remaining }} {{ 'DASHBOARD.COL_DAYS' | translate }}</strong>
           </div>
 
           <div class="form-group">
-            <label for="startDate">Start Date</label>
+            <label for="startDate">{{ 'HOLIDAY_REQUEST.START_DATE' | translate }}</label>
             <input id="startDate" name="startDate" type="date" [(ngModel)]="startDate" [min]="today" (change)="calcPreview()" />
           </div>
 
           <div class="form-group">
-            <label for="end_date">End Date</label>
+            <label for="end_date">{{ 'HOLIDAY_REQUEST.END_DATE' | translate }}</label>
             <input id="end_date" name="end_date" type="date" [(ngModel)]="end_date" [min]="startDate || today" (change)="calcPreview()" />
           </div>
 
           <div class="days-preview" *ngIf="previewDays > 0">
-            📅 Duration: <strong>{{ previewDays }} day(s)</strong>
+            {{ 'HOLIDAY_REQUEST.DURATION' | translate }} <strong>{{ 'HOLIDAY_REQUEST.DAYS_COUNT' | translate:{count: previewDays} }}</strong>
           </div>
 
           <div class="form-group">
-            <label for="reason">Reason</label>
-            <textarea id="reason" name="reason" [(ngModel)]="reason" placeholder="Briefly describe the reason for your leave..."></textarea>
+            <label for="reason">{{ 'HOLIDAY_REQUEST.REASON' | translate }}</label>
+            <textarea id="reason" name="reason" [(ngModel)]="reason" [placeholder]="'HOLIDAY_REQUEST.REASON_PLACEHOLDER' | translate"></textarea>
           </div>
 
-          <button class="btn-primary" (click)="submit()">Submit Request →</button>
+          <button class="btn-primary" (click)="submit()">{{ 'HOLIDAY_REQUEST.SUBMIT_BTN' | translate }}</button>
         </div>
         <ng-template #adminNote>
           <div class="card">
-            <div class="card-title">📝 Submit New Request</div>
+            <div class="card-title">{{ 'HOLIDAY_REQUEST.SUBMIT_TITLE' | translate }}</div>
             <div class="empty-state">
               <span class="emoji">ℹ️</span>
-              General managers do not submit holiday requests.
+              {{ 'HOLIDAY_REQUEST.GM_NOTE' | translate }}
             </div>
           </div>
         </ng-template>
 
         <!-- My requests -->
         <div class="card">
-          <div class="card-title">📜 My Requests</div>
+          <div class="card-title">{{ 'HOLIDAY_REQUEST.MY_REQUESTS' | translate }}</div>
           <ng-container *ngIf="myRequests.length; else noReqs">
             <table class="req-table">
-              <thead><tr><th>Period</th><th>Days</th><th>Status</th><th>Approval</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>{{ 'DASHBOARD.COL_PERIOD' | translate }}</th>
+                  <th>{{ 'DASHBOARD.COL_DAYS' | translate }}</th>
+                  <th>{{ 'DASHBOARD.COL_STATUS' | translate }}</th>
+                  <th>{{ 'DASHBOARD.COL_APPROVAL' | translate }}</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr *ngFor="let r of myRequests">
                   <td>{{ fmt(r.startDate) }} –<br>{{ fmt(r.end_date) }}</td>
                   <td>{{ r.days }}</td>
-                  <td><span class="badge" [ngClass]="bc(r.status)">{{ r.status }}</span></td>
+                  <td><span class="badge" [ngClass]="bc(r.status)">{{ getStatusLabel(r.status) }}</span></td>
                   <td>{{ approvalText(r) }}</td>
                 </tr>
               </tbody>
             </table>
           </ng-container>
           <ng-template #noReqs>
-            <div class="empty-state"><span class="emoji">📭</span>No requests submitted yet</div>
+            <div class="empty-state"><span class="emoji">📭</span>{{ 'HOLIDAY_REQUEST.NO_REQUESTS' | translate }}</div>
           </ng-template>
         </div>
       </div>
@@ -111,7 +119,8 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
     private toast: ToastService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    public store: DataStoreService
+    public store: DataStoreService,
+    private translate: TranslateService
   ) { }
 
   get remaining() { return this.emp ? this.emp.totalHolidays - this.emp.usedHolidays : 0; }
@@ -140,9 +149,18 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
   }
 
   submit(): void {
-    if (!this.startDate || !this.end_date) { this.toast.show('⚠️ Please select start and end dates', 'error'); return; }
-    if (this.end_date < this.startDate) { this.toast.show('⚠️ End date must be after start date', 'error'); return; }
-    if (!this.reason.trim()) { this.toast.show('⚠️ Please enter a reason', 'error'); return; }
+    if (!this.startDate || !this.end_date) { 
+      this.toast.show(this.translate.instant('HOLIDAY_REQUEST.MSG_SELECT_DATES'), 'error'); 
+      return; 
+    }
+    if (this.end_date < this.startDate) { 
+      this.toast.show(this.translate.instant('HOLIDAY_REQUEST.MSG_DATE_ERROR'), 'error'); 
+      return; 
+    }
+    if (!this.reason.trim()) { 
+      this.toast.show(this.translate.instant('HOLIDAY_REQUEST.MSG_ENTER_REASON'), 'error'); 
+      return; 
+    }
 
     const payload: Partial<HolidayRequest> = {
       empId: this.emp.id,
@@ -155,33 +173,41 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
 
     this.holSvc.submit(payload).subscribe({
       next: () => {
-        this.toast.show('✅ Holiday request submitted!');
+        this.toast.show(this.translate.instant('HOLIDAY_REQUEST.MSG_SUCCESS'));
         this.startDate = ''; this.end_date = ''; this.reason = ''; this.previewDays = 0;
         this.store.refresh();
       },
-      error: () => this.toast.show('❌ Failed to submit request', 'error')
+      error: () => this.toast.show(this.translate.instant('HOLIDAY_REQUEST.MSG_ERROR'), 'error')
     });
   }
 
-  fmt(d: string) { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
+  fmt(d: string) { 
+    const locale = this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-GB';
+    return new Date(d).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' }); 
+  }
 
   approvalText(req: HolidayRequest): string {
     if (req.manager_status === 'rejected') {
-      return `Rejected by manager (ID: ${req.manager_id})`;
+      return this.translate.instant('DASHBOARD.APPROVAL_REJECTED_MGR', { id: req.manager_id });
     }
     if (req.gm_status === 'rejected') {
-      return `Rejected by general manager (ID: ${req.gm_id})`;
+      return this.translate.instant('DASHBOARD.APPROVAL_REJECTED_GM', { id: req.gm_id });
     }
     if (req.manager_status === 'pending') {
-      return 'Waiting for manager approval';
+      return this.translate.instant('DASHBOARD.APPROVAL_WAITING_MGR');
     }
     if (req.manager_status === 'approved' && req.gm_status === 'pending') {
-      return `Approved by manager (ID: ${req.manager_id}), waiting for general manager`;
+      return this.translate.instant('DASHBOARD.APPROVAL_WAITING_GM', { id: req.manager_id });
     }
     if (req.manager_status === 'approved' && req.gm_status === 'approved') {
-      return `Fully approved ✅`;
+      return this.translate.instant('HOLIDAY_REQUEST.FULLY_APPROVED');
     }
     return '';
+  }
+
+  getStatusLabel(status: string) {
+    const key = `DASHBOARD.STATUS_${status.toUpperCase()}`;
+    return this.translate.instant(key);
   }
 
   bc(s: string) { return { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected' }[s] ?? ''; }

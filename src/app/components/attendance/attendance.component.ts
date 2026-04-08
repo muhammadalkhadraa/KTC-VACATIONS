@@ -4,13 +4,13 @@ import { AuthService } from '../../services/auth.service';
 import { AttendanceService } from '../../services/attendance.service';
 import { ToastService } from '../../services/toast.service';
 import { AttendanceRecord, CheckInStatus } from '../../models/models';
-
-const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-attendance',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TranslateModule],
   styles: [`
     .checkin-box {
       display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
@@ -39,24 +39,26 @@ const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   `],
   template: `
     <div class="page-wrapper">
-      <h1 class="page-title">📋 Attendance <span>Tracker</span></h1>
+      <h1 class="page-title">📋 {{ 'ATTENDANCE.TITLE' | translate | slice:0:-8 }} <span>{{ 'ATTENDANCE.TRACKER_SPAN' | translate }}</span></h1>
 
       <!-- Check In / Out Box -->
       <div class="card">
-        <div class="card-title">⏰ Today's Attendance</div>
+        <div class="card-title">{{ 'ATTENDANCE.TODAY' | translate }}</div>
         <div class="checkin-box">
           <div>
             <div class="live-time">{{ liveTime }}</div>
             <div class="live-date">{{ dateLabel }}</div>
           </div>
           <ng-container [ngSwitch]="status.state">
-            <button *ngSwitchCase="'none'" class="btn-checkin btn-in" (click)="checkIn()">✅ Check In</button>
+            <button *ngSwitchCase="'none'" class="btn-checkin btn-in" (click)="checkIn()">{{ 'ATTENDANCE.BTN_CHECKIN' | translate }}</button>
             <ng-container *ngSwitchCase="'in'">
-              <span class="checked-msg">✅ Checked in at {{ status.checkInTime }}</span>
-              <button class="btn-checkin btn-out" (click)="checkOut()">🚪 Check Out</button>
+              <span class="checked-msg">{{ 'ATTENDANCE.CHECKED_IN_AT' | translate:{time: status.checkInTime} }}</span>
+              <button class="btn-checkin btn-out" (click)="checkOut()">{{ 'ATTENDANCE.BTN_CHECKOUT' | translate }}</button>
             </ng-container>
             <span *ngSwitchCase="'out'" class="checked-msg">
-              ✅ Done for today! &nbsp; In: {{ status.checkInTime }} &nbsp;|&nbsp; Out: {{ status.checkOutTime }}
+              {{ 'ATTENDANCE.DONE_MSG' | translate }} &nbsp; 
+              {{ 'DASHBOARD.COL_IN' | translate }}: {{ status.checkInTime }} &nbsp;|&nbsp; 
+              {{ 'DASHBOARD.COL_OUT' | translate }}: {{ status.checkOutTime }}
             </span>
           </ng-container>
         </div>
@@ -64,25 +66,31 @@ const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
       <!-- Filter -->
       <div class="filter-row">
-        <span>Filter:</span>
-        <button class="pill" [class.active]="filter==='All'"     (click)="filter='All'">All</button>
-        <button class="pill" [class.active]="filter==='Present'" (click)="filter='Present'">Present</button>
-        <button class="pill" [class.active]="filter==='Absent'"  (click)="filter='Absent'">Absent</button>
-        <button class="pill" [class.active]="filter==='Late'"    (click)="filter='Late'">Late</button>
+        <span>{{ 'ATTENDANCE.FILTER' | translate }}</span>
+        <button class="pill" [class.active]="filter==='All'"     (click)="filter='All'">{{ 'DASHBOARD.STATUS_PENDING' | translate: {defaultValue: 'All'} }}</button>
+        <button class="pill" [class.active]="filter==='Present'" (click)="filter='Present'">{{ 'DASHBOARD.STATUS_PRESENT' | translate }}</button>
+        <button class="pill" [class.active]="filter==='Absent'"  (click)="filter='Absent'">{{ 'DASHBOARD.STATUS_ABSENT' | translate }}</button>
+        <button class="pill" [class.active]="filter==='Late'"    (click)="filter='Late'">{{ 'DASHBOARD.STATUS_LATE' | translate }}</button>
       </div>
 
       <!-- History Table -->
       <div class="card">
-        <div class="card-title">📊 Attendance History (Last 14 Days)</div>
+        <div class="card-title">{{ 'ATTENDANCE.HISTORY' | translate }}</div>
         <table>
           <thead>
-            <tr><th>Date</th><th>Day</th><th>Status</th><th>Check In</th><th>Check Out</th></tr>
+            <tr>
+              <th>{{ 'DASHBOARD.COL_DATE' | translate }}</th>
+              <th>{{ 'ATTENDANCE.COL_DAY' | translate }}</th>
+              <th>{{ 'DASHBOARD.COL_STATUS' | translate }}</th>
+              <th>{{ 'DASHBOARD.COL_IN' | translate }}</th>
+              <th>{{ 'DASHBOARD.COL_OUT' | translate }}</th>
+            </tr>
           </thead>
           <tbody>
             <tr *ngFor="let r of filtered">
               <td>{{ formatDate(r.date) }}</td>
               <td>{{ dayName(r.date) }}</td>
-              <td><span class="badge" [ngClass]="badgeClass(r.status)">{{ r.status }}</span></td>
+              <td><span class="badge" [ngClass]="badgeClass(r.status)">{{ getStatusLabel(r.status) }}</span></td>
               <td>{{ r.checkIn }}</td>
               <td>{{ r.checkOut }}</td>
             </tr>
@@ -99,11 +107,13 @@ export class AttendanceComponent implements OnInit, OnDestroy {
   liveTime = '';
   dateLabel = '';
   private timer?: ReturnType<typeof setInterval>;
+  private sub = new Subscription();
 
   constructor(
     private auth: AuthService,
     private attSvc: AttendanceService,
-    private toast: ToastService
+    private toast: ToastService,
+    private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
@@ -111,15 +121,32 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     this.loadHistory(id);
     this.tick();
     this.timer = setInterval(() => this.tick(), 1000);
-    this.dateLabel = new Date().toLocaleDateString('en-GB', { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+    this.updateDateLabel();
+    
+    this.sub.add(
+      this.translate.onLangChange.subscribe(() => {
+        this.updateDateLabel();
+      })
+    );
   }
-  ngOnDestroy(): void { clearInterval(this.timer); }
 
-  tick() { this.liveTime = new Date().toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit', second:'2-digit' }); }
+  ngOnDestroy(): void { 
+    clearInterval(this.timer); 
+    this.sub.unsubscribe();
+  }
+
+  tick() { 
+    const locale = this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-GB';
+    this.liveTime = new Date().toLocaleTimeString(locale, { hour:'2-digit', minute:'2-digit', second:'2-digit' }); 
+  }
+
+  private updateDateLabel() {
+    const locale = this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-GB';
+    this.dateLabel = new Date().toLocaleDateString(locale, { weekday:'long', day:'2-digit', month:'long', year:'numeric' });
+  }
 
   private loadHistory(empId: string) {
     this.attSvc.getHistory(empId).subscribe(statuses => {
-      // sort newest first
       statuses.sort((a,b) => (b.id||0) - (a.id||0));
       this.status = statuses[0] ?? { empId, state:'none', checkInTime:'', checkOutTime:'' };
       this.records = statuses.map(s => this.attSvc.toRecord(s));
@@ -135,7 +162,7 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     this.attSvc.postStatus({ empId: id, state: 'in' }).subscribe(s => {
       this.status = s;
       this.loadHistory(id);
-      this.toast.show('✅ Checked in successfully!');
+      this.toast.show(this.translate.instant('ATTENDANCE.SUCCESS_IN'));
     });
   }
   checkOut() {
@@ -143,12 +170,25 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     this.attSvc.postStatus({ empId: id, state: 'out' }).subscribe(s => {
       this.status = s;
       this.loadHistory(id);
-      this.toast.show('👋 Checked out. See you tomorrow!');
+      this.toast.show(this.translate.instant('ATTENDANCE.SUCCESS_OUT'));
     });
   }
 
-  formatDate(d: string) { return new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
-  dayName(d: string)   { return DAYS[new Date(d).getDay()]; }
+  formatDate(d: string) { 
+    const locale = this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-GB';
+    return new Date(d).toLocaleDateString(locale, { day:'2-digit', month:'short', year:'numeric' }); 
+  }
+
+  dayName(d: string) { 
+    const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const key = `ATTENDANCE.DAYS.${days[new Date(d).getDay()]}`;
+    return this.translate.instant(key);
+  }
+
+  getStatusLabel(status: string) {
+    const key = `DASHBOARD.STATUS_${status.toUpperCase()}`;
+    return this.translate.instant(key);
+  }
 
   badgeClass(s: string) {
     const m: Record<string,string> = { Present:'badge-present', Absent:'badge-absent', Late:'badge-late', Weekend:'badge-weekend' };

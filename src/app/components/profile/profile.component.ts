@@ -1,14 +1,16 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { HolidayService } from '../../services/holiday.service';
 import { Employee, HolidayRequest } from '../../models/models';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, TranslateModule],
   styles: [`
     .profile-header {
       background: linear-gradient(135deg, #2E86AB, #1A5F7A);
@@ -48,78 +50,91 @@ import { Employee, HolidayRequest } from '../../models/models';
   `],
   template: `
     <div class="page-wrapper" *ngIf="emp">
-      <h1 class="page-title">👤 My <span>Profile</span></h1>
+      <h1 class="page-title">👤 {{ 'PROFILE.TITLE' | translate | slice:0:-8 }} <span>{{ 'PROFILE.PROFILE_SPAN' | translate }}</span></h1>
 
       <!-- Header -->
       <div class="profile-header">
         <div class="avatar-big">{{ emp.name.charAt(0) }}</div>
         <div>
           <div class="prof-name">{{ emp.name }}</div>
-          <div class="prof-sub">{{ emp.position }} · {{ emp.department }} Department</div>
+          <div class="prof-sub">{{ emp.position }} · {{ emp.department }} {{ 'PROFILE.DEPT_SUFFIX' | translate }}</div>
           <span class="prof-badge">🆔 {{ emp.id }}</span>
         </div>
       </div>
 
       <!-- Info grid -->
       <div class="card">
-        <div class="card-title">📋 Employee Information</div>
+        <div class="card-title">{{ 'PROFILE.INFO_TITLE' | translate }}</div>
         <div class="info-grid">
-          <div class="info-item"><div class="info-lbl">Employee ID</div>  <div class="info-val">{{ emp.id }}</div></div>
-          <div class="info-item"><div class="info-lbl">Full Name</div>    <div class="info-val">{{ emp.name }}</div></div>
-          <div class="info-item"><div class="info-lbl">Department</div>   <div class="info-val">{{ emp.department }}</div></div>
-          <div class="info-item"><div class="info-lbl">Position</div>     <div class="info-val">{{ emp.position }}</div></div>
-          <div class="info-item"><div class="info-lbl">Joined</div>       <div class="info-val">{{ formatDate(emp.joined) }}</div></div>
-          <div class="info-item"><div class="info-lbl">Role</div>         <div class="info-val">{{ emp.role | titlecase }}</div></div>
+          <div class="info-item"><div class="info-lbl">{{ 'LOGIN.EMP_ID' | translate }}</div>  <div class="info-val">{{ emp.id }}</div></div>
+          <div class="info-item"><div class="info-lbl">{{ 'PROFILE.FULL_NAME' | translate }}</div>    <div class="info-val">{{ emp.name }}</div></div>
+          <div class="info-item"><div class="info-lbl">{{ 'DASHBOARD.COL_DEPT' | translate }}</div>   <div class="info-val">{{ emp.department }}</div></div>
+          <div class="info-item"><div class="info-lbl">{{ 'DASHBOARD.COL_STATUS' | translate: {defaultValue: 'Position'} }}</div>     <div class="info-val">{{ emp.position }}</div></div>
+          <div class="info-item"><div class="info-lbl">{{ 'PROFILE.JOINED' | translate }}</div>       <div class="info-val">{{ formatDate(emp.joined) }}</div></div>
+          <div class="info-item"><div class="info-lbl">{{ 'PROFILE.ROLE' | translate }}</div>         <div class="info-val">{{ emp.role | titlecase }}</div></div>
         </div>
       </div>
 
       <!-- Holiday balance -->
       <div class="card">
-        <div class="card-title">🏖️ Holiday Balance</div>
+        <div class="card-title">{{ 'PROFILE.HOL_BALANCE' | translate }}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-          <span style="font-weight:700;color:#1e3a4a">Annual Leave Balance</span>
-          <span style="font-size:1.1rem;font-weight:800;color:#1A5F7A">{{ remaining }} / {{ emp.totalHolidays }} days</span>
+          <span style="font-weight:700;color:#1e3a4a">{{ 'PROFILE.ANNUAL_LEAVE' | translate }}</span>
+          <span style="font-size:1.1rem;font-weight:800;color:#1A5F7A">{{ remaining }} / {{ emp.totalHolidays }} {{ 'DASHBOARD.COL_DAYS' | translate }}</span>
         </div>
         <div class="hol-bar"><div class="hol-fill" [style.width]="barWidth"></div></div>
         <div class="hol-meta">
-          <span>✅ Used: <strong>{{ emp.usedHolidays }}</strong></span>
-          <span>🏖️ Remaining: <strong>{{ remaining }}</strong></span>
-          <span>📅 Total: <strong>{{ emp.totalHolidays }}</strong></span>
+          <span>{{ 'PROFILE.USED' | translate }} <strong>{{ emp.usedHolidays }}</strong></span>
+          <span>{{ 'PROFILE.REMAINING' | translate }} <strong>{{ remaining }}</strong></span>
+          <span>{{ 'PROFILE.TOTAL' | translate }} <strong>{{ emp.totalHolidays }}</strong></span>
         </div>
         <div style="margin-top:20px;">
-          <a class="btn-request" routerLink="/holiday-request">✈️ Request Holiday</a>
+          <a class="btn-request" routerLink="/holiday-request">{{ 'DASHBOARD.REQUEST_HOLIDAY' | translate }}</a>
         </div>
       </div>
 
       <!-- Holiday history -->
       <div class="card">
-        <div class="card-title">📜 Holiday Request History</div>
+        <div class="card-title">{{ 'PROFILE.HOL_HISTORY' | translate }}</div>
         <ng-container *ngIf="requests.length; else noHols">
           <table class="req-table">
-            <thead><tr><th>Start</th><th>End</th><th>Days</th><th>Reason</th><th>Status</th></tr></thead>
+            <thead>
+              <tr>
+                <th>{{ 'PROFILE.COL_START' | translate }}</th>
+                <th>{{ 'PROFILE.COL_END' | translate }}</th>
+                <th>{{ 'DASHBOARD.COL_DAYS' | translate }}</th>
+                <th>{{ 'PROFILE.COL_REASON' | translate }}</th>
+                <th>{{ 'DASHBOARD.COL_STATUS' | translate }}</th>
+              </tr>
+            </thead>
             <tbody>
               <tr *ngFor="let r of requests">
                 <td>{{ formatDate(r.startDate) }}</td>
                 <td>{{ formatDate(r.end_date) }}</td>
                 <td>{{ r.days }}</td>
                 <td>{{ r.reason }}</td>
-                <td><span class="badge" [ngClass]="badgeClass(r.status)">{{ r.status }}</span></td>
+                <td><span class="badge" [ngClass]="badgeClass(r.status)">{{ getStatusLabel(r.status) }}</span></td>
               </tr>
             </tbody>
           </table>
         </ng-container>
         <ng-template #noHols>
-          <div class="empty-state"><span class="emoji">📭</span>No holiday requests yet</div>
+          <div class="empty-state"><span class="emoji">📭</span>{{ 'PROFILE.NO_HOLS' | translate }}</div>
         </ng-template>
       </div>
     </div>
   `
 })
-export class ProfileComponent implements OnInit {
+export class ProfileComponent implements OnInit, OnDestroy {
   emp!: Employee;
   requests: HolidayRequest[] = [];
+  private sub = new Subscription();
 
-  constructor(private auth: AuthService, private holSvc: HolidayService) { }
+  constructor(
+    private auth: AuthService, 
+    private holSvc: HolidayService,
+    private translate: TranslateService
+  ) { }
 
   get remaining() { return this.emp.totalHolidays - this.emp.usedHolidays; }
   get barWidth() { return Math.round((this.remaining / this.emp.totalHolidays) * 100) + '%'; }
@@ -134,7 +149,19 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  formatDate(d: string) { return new Date(d).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); }
+  ngOnDestroy(): void {
+    this.sub.unsubscribe();
+  }
+
+  formatDate(d: string) { 
+    const locale = this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-GB';
+    return new Date(d).toLocaleDateString(locale, { day: '2-digit', month: 'short', year: 'numeric' }); 
+  }
+
+  getStatusLabel(status: string) {
+    const key = `DASHBOARD.STATUS_${status.toUpperCase()}`;
+    return this.translate.instant(key);
+  }
 
   badgeClass(s: string) {
     const m: Record<string, string> = { pending: 'badge-pending', approved: 'badge-approved', rejected: 'badge-rejected' };

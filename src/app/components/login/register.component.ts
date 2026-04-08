@@ -4,11 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ToastService } from '../../services/toast.service';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, TranslateModule],
   styles: [
     // reuse same css as login for simplicity
     `.login-page {
@@ -86,39 +87,40 @@ import { ToastService } from '../../services/toast.service';
     .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,134,171,.4); }
     .note { font-size: .72rem; color: #8ab4c8; margin-top: 18px; line-height: 1.6; }
     .divider { border: none; border-top: 1px solid #D6F0FF; margin: 20px 0; }
+    .link-btn { color: #2E86AB; cursor: pointer; text-decoration: underline; font-weight: 700; }
   `],
   template: `
     <div class="login-page">
       <div class="card">
         <div class="logo">KT<span>C</span></div>
         <div class="subtitle">Kazareen Textile Company</div>
-        <h2>Create an Account</h2>
+        <h2>{{ 'REGISTER.TITLE' | translate }}</h2>
 
         <div class="form-group">
-          <label for="regId">Employee ID</label>
+          <label for="regId">{{ 'LOGIN.EMP_ID' | translate }}</label>
           <input id="regId" name="regId" type="text" [(ngModel)]="id" placeholder="EMP001" />
         </div>
         <div class="form-group">
-          <label for="regName">Name</label>
+          <label for="regName">{{ 'REGISTER.NAME' | translate }}</label>
           <input id="regName" name="regName" type="text" [(ngModel)]="name" placeholder="John Doe" />
         </div>
         <div class="form-group">
-          <label for="regDept">Department</label>
+          <label for="regDept">{{ 'DASHBOARD.COL_DEPT' | translate }}</label>
           <input id="regDept" name="regDept" type="text" [(ngModel)]="department" placeholder="Production" />
         </div>
         <div class="form-group">
-          <label for="regPos">Position</label>
+          <label for="regPos">{{ 'PROFILE.ROLE' | translate: {defaultValue: 'Position'} }}</label>
           <input id="regPos" name="regPos" type="text" [(ngModel)]="position" placeholder="Operator" />
         </div>
         <div class="form-group">
-          <label for="regPass">Password</label>
-          <input id="regPass" name="regPass" type="password" [(ngModel)]="password" placeholder="Choose a password" />
+          <label for="regPass">{{ 'LOGIN.PASSWORD' | translate }}</label>
+          <input id="regPass" name="regPass" type="password" [(ngModel)]="password" [placeholder]="'REGISTER.PASS_PLACEHOLDER' | translate" />
         </div>
 
-        <button class="btn" (click)="register()">Register →</button>
+        <button class="btn" (click)="register()">{{ 'REGISTER.BTN_REGISTER' | translate }}</button>
         <hr class="divider" />
         <p class="note">
-          Already have an account? <a (click)="gotoLogin()">Login here</a>.
+          {{ 'REGISTER.ALREADY_HAVE' | translate }} <a class="link-btn" (click)="gotoLogin()">{{ 'REGISTER.LOGIN_HERE' | translate }}</a>.
         </p>
       </div>
     </div>
@@ -134,12 +136,13 @@ export class RegisterComponent {
   constructor(
     private auth: AuthService,
     private toast: ToastService,
-    private router: Router
+    private router: Router,
+    private translate: TranslateService
   ) {}
 
   register(): void {
     if (!this.id || !this.name || !this.department || !this.position || !this.password) {
-      this.toast.show('⚠️ Please fill in all fields', 'error');
+      this.toast.show(this.translate.instant('REGISTER.MSG_FILL_ALL'), 'error');
       return;
     }
     this.auth.register({
@@ -150,17 +153,18 @@ export class RegisterComponent {
       position: this.position.trim()
     }).subscribe({
       next: () => {
-        this.toast.show('✅ Registration successful – you can now log in');
+        this.toast.show(this.translate.instant('REGISTER.MSG_SUCCESS'));
         this.router.navigate(['/login']);
       },
       error: err => {
         if (err.status === 409) {
-          this.toast.show('❌ Employee ID already exists', 'error');
+          this.toast.show(this.translate.instant('REGISTER.MSG_EXISTS'), 'error');
         } else {
-          this.toast.show('❌ Registration failed', 'error');
+          this.toast.show(this.translate.instant('REGISTER.MSG_FAILED'), 'error');
         }
       }
     });
   }
 
-  gotoLogin() { this.router.navigate(['/login']); }}
+  gotoLogin() { this.router.navigate(['/login']); }
+}

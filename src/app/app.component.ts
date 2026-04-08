@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { ToastComponent } from './components/navbar/toast.component';
+import { LanguageService } from './services/language.service';
 
 @Component({
   selector: 'app-root',
@@ -13,4 +14,6 @@ import { ToastComponent } from './components/navbar/toast.component';
     <app-toast></app-toast>
   `
 })
-export class AppComponent {}
+export class AppComponent {
+  constructor(private langService: LanguageService) {}
+}
