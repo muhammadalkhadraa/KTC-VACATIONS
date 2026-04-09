@@ -13,52 +13,52 @@ import { Subscription } from 'rxjs';
   imports: [CommonModule, TranslateModule],
   styles: [`
     .checkin-box {
-      display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;
-      padding: 40px; background: var(--white); border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: space-between; gap: 40px; flex-wrap: wrap;
+      padding: 48px; background: var(--bg-surface); border-radius: var(--radius);
       border: 1px solid var(--glass-border);
       box-shadow: var(--shadow-xl);
       position: relative; overflow: hidden;
     }
     .checkin-box::before {
-      content: ""; position: absolute; top: -20px; right: -20px;
-      width: 100px; height: 100px; background: var(--accent-soft);
+      content: ""; position: absolute; top: -50px; right: -50px;
+      width: 200px; height: 200px; background: radial-gradient(circle, rgba(0, 163, 255, 0.05) 0%, transparent 70%);
       border-radius: 50%;
     }
-    .time-area { display: flex; align-items: center; gap: 20px; }
+    .time-area { display: flex; align-items: center; gap: 32px; }
     .live-time { 
-      font-size: 3.5rem; font-weight: 800; color: var(--primary); 
+      font-size: 4rem; font-weight: 800; color: var(--primary); 
       font-family: 'Outfit', sans-serif; letter-spacing: -0.02em;
+      line-height: 1; margin-bottom: 8px;
     }
-    .live-date { font-size: 1rem; color: var(--text-muted); font-weight: 600; }
+    .live-date { font-size: 1.1rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
     
     .btn-checkin {
       padding: 16px 40px; border: none; border-radius: var(--radius-sm);
       font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.1rem;
       cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex; align-items: center; gap: 12px;
-      box-shadow: var(--shadow-md);
     }
-    .btn-in  { background: linear-gradient(135deg, var(--success), #2d9e6a); color: white; }
-    .btn-in:hover  { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(16,185,129,0.3); }
-    .btn-out { background: linear-gradient(135deg, var(--warning), #e08c00); color: white; }
-    .btn-out:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(245,158,11,0.3); }
+    .btn-in  { background: var(--success); color: white; box-shadow: 0 0 20px rgba(52, 211, 153, 0.2); }
+    .btn-in:hover  { transform: translateY(-4px); box-shadow: 0 0 30px rgba(52, 211, 153, 0.4); }
+    .btn-out { background: var(--warning); color: white; box-shadow: 0 0 20px rgba(251, 191, 36, 0.2); }
+    .btn-out:hover { transform: translateY(-4px); box-shadow: 0 0 30px rgba(251, 191, 36, 0.4); }
     
     .checked-msg { 
-      font-weight: 700; color: var(--primary); 
-      display: flex; align-items: center; gap: 8px;
-      background: var(--sky); padding: 12px 20px; border-radius: var(--radius-sm);
+      font-weight: 700; color: var(--text-main); 
+      display: flex; align-items: center; gap: 12px;
+      background: rgba(255, 255, 255, 0.03); padding: 16px 24px; border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
     }
 
-    .filter-row { display: flex; gap: 16px; margin: 32px 0 20px; align-items: center; }
-    .filter-lbl { font-weight: 800; color: var(--primary); font-size: .85rem; text-transform: uppercase; letter-spacing: 0.1em; }
+    .filter-row { display: flex; gap: 12px; margin: 40px 0 24px; align-items: center; }
+    .filter-lbl { font-weight: 800; color: var(--text-dim); font-size: .8rem; text-transform: uppercase; letter-spacing: 0.1em; margin-right: 8px; }
     .pill {
-      padding: 8px 20px; border-radius: var(--radius-full); border: 1px solid var(--glass-border);
-      background: var(--white); color: var(--text-muted); font-family: 'Inter', sans-serif;
-      font-weight: 600; font-size: .85rem; cursor: pointer; transition: all 0.2s;
-      box-shadow: var(--shadow-sm);
+      padding: 8px 18px; border-radius: 8px; border: 1px solid var(--glass-border);
+      background: var(--bg-surface); color: var(--text-muted); font-family: 'Inter', sans-serif;
+      font-weight: 700; font-size: .85rem; cursor: pointer; transition: all 0.2s;
     }
-    .pill:hover { border-color: var(--accent); color: var(--primary); }
-    .pill.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: var(--shadow-md); }
+    .pill:hover { border-color: rgba(255, 255, 255, 0.2); color: var(--text-main); }
+    .pill.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 15px rgba(0, 163, 255, 0.3); }
   `],
   template: `
     <div class="page-wrapper">

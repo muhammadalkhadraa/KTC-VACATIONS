@@ -11,113 +11,155 @@ import { LanguageService } from '../../services/language.service';
   imports: [CommonModule, RouterModule, TranslateModule],
   styles: [`
     nav {
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border-bottom: 1px solid var(--glass-border);
-      padding: 0 40px;
-      height: 72px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--glass-border);
+      padding: 32px 16px;
+      width: var(--sidebar-width);
+      height: 100vh;
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
+      flex-direction: column;
+      position: fixed;
+      left: 0;
       top: 0;
       z-index: 1000;
-      box-shadow: var(--shadow-md);
+      transition: all 0.3s ease;
     }
-    .brand-area { display: flex; align-items: center; gap: 24px; }
+    
+    /* Brand Area */
+    .brand-area {
+      padding: 0 12px 32px;
+    }
     .logo {
       font-family: 'Outfit', sans-serif;
       font-weight: 800;
-      font-size: 1.6rem;
-      color: var(--primary);
-      letter-spacing: -0.01em;
+      font-size: 1.8rem;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
       text-decoration: none;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 12px;
+      margin-bottom: 24px;
     }
-    .logo i { color: var(--accent); }
-    .logo span { color: var(--accent); }
+    .logo i { color: var(--primary); }
+    .logo span { color: var(--primary); }
 
     .lang-toggle {
-      background: var(--accent-soft);
-      border: 1px solid var(--accent);
-      border-radius: var(--radius-full);
-      padding: 6px 16px;
-      font-size: 0.8rem;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 16px;
+      font-size: 0.85rem;
       font-weight: 700;
-      color: var(--primary);
+      color: var(--text-main);
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      justify-content: space-between;
+      transition: all 0.25s ease;
       font-family: 'Outfit', sans-serif;
     }
     .lang-toggle:hover { 
-      background: var(--accent); 
-      color: white;
-      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.08); 
+      border-color: rgba(255, 255, 255, 0.2);
     }
-    .lang-toggle .flag { font-size: 1.1rem; }
 
+    /* Links Area */
     .links { 
       display: flex; 
+      flex-direction: column;
       gap: 8px; 
-      background: rgba(137, 207, 240, 0.08);
-      padding: 6px;
-      border-radius: var(--radius-sm);
+      margin: 24px 0;
+      flex: 1;
     }
+    
     .nav-link {
-      padding: 10px 20px;
+      padding: 12px 16px;
       border-radius: var(--radius-sm);
       font-weight: 600;
-      font-size: .9rem;
+      font-size: .95rem;
       color: var(--text-muted);
       cursor: pointer;
-      transition: all 0.25s ease;
+      transition: all 0.3s ease;
       text-decoration: none;
-      font-family: 'Inter', sans-serif;
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-    .nav-link:hover {
-      color: var(--primary);
-      background: rgba(255,255,255,0.5);
-    }
-    .nav-link.active {
-      background: var(--white);
-      color: var(--primary);
-      box-shadow: var(--shadow-sm);
+      gap: 12px;
+      position: relative;
     }
     
-    .user-area { display: flex; align-items: center; gap: 16px; }
-    .avatar-wrapper {
-      position: relative;
-      cursor: pointer;
+    .nav-link i {
+      width: 20px;
+      height: 20px;
+      transition: all 0.3s ease;
     }
+    
+    .nav-link:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    
+    .nav-link.active {
+      background: var(--accent-soft);
+      color: var(--primary);
+    }
+    
+    .nav-link.active::before {
+      content: '';
+      position: absolute;
+      left: -16px;
+      top: 15%;
+      height: 70%;
+      width: 4px;
+      background: var(--primary);
+      border-radius: 0 4px 4px 0;
+      box-shadow: 0 0 15px var(--primary);
+    }
+    
+    /* User Area */
+    .user-area { 
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid var(--glass-border);
+    }
+    
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius-sm);
+      margin-bottom: 16px;
+    }
+    
     .avatar {
-      width: 42px; height: 42px; border-radius: 12px;
-      background: linear-gradient(135deg, var(--accent), var(--primary-light));
+      width: 40px; height: 40px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
       display: flex; align-items: center; justify-content: center;
       color: white; font-weight: 800; font-size: 1rem;
-      box-shadow: 0 4px 10px rgba(137, 207, 240, 0.4);
-      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      flex-shrink: 0;
     }
-    .avatar-wrapper:hover .avatar { transform: scale(1.05) rotate(5deg); }
     
-    .user-info { display: flex; flex-direction: column; }
-    .user-name { font-weight: 700; color: var(--primary); font-size: .95rem; line-height: 1.2; }
-    .user-id { font-size: .75rem; color: var(--text-muted); font-weight: 500; }
+    .user-info { display: flex; flex-direction: column; overflow: hidden; }
+    .user-name { 
+      font-weight: 700; 
+      color: var(--text-main); 
+      font-size: .9rem; 
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+    .user-id { font-size: .7rem; color: var(--text-muted); font-weight: 500; }
     
     .btn-logout {
-      padding: 10px 18px; 
+      width: 100%;
+      padding: 12px; 
       border-radius: var(--radius-sm); 
-      border: 1px solid #fed7d7;
-      background: #fff5f5; 
-      color: #e53e3e; 
+      border: 1px solid rgba(255, 75, 92, 0.2);
+      background: rgba(255, 75, 92, 0.05); 
+      color: var(--danger); 
       font-family: 'Outfit', sans-serif;
       font-weight: 700; 
       font-size: .85rem; 
@@ -125,18 +167,30 @@ import { LanguageService } from '../../services/language.service';
       transition: all 0.2s;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      gap: 10px;
     }
     .btn-logout:hover { 
-      background: #e53e3e; 
+      background: var(--danger); 
       color: white; 
-      border-color: #e53e3e;
-      transform: translateY(-1px);
+      border-color: var(--danger);
     }
 
+    /* RTL Handling */
+    [dir="rtl"] nav { 
+      left: auto; 
+      right: 0; 
+      border-right: none; 
+      border-left: 1px solid var(--glass-border); 
+    }
+    [dir="rtl"] .nav-link.active::before { left: auto; right: -16px; border-radius: 4px 0 0 4px; }
+    
     @media (max-width: 1024px) {
-      .links { display: none; }
-      nav { padding: 0 20px; }
+      nav { width: 80px; padding: 32px 12px; }
+      .brand-area, .nav-link span, .user-info, .btn-logout span { display: none; }
+      .logo { margin-bottom: 40px; justify-content: center; }
+      .nav-link { justify-content: center; padding: 16px; }
+      .user-profile { justify-content: center; padding: 12px 0; }
     }
   `],
   template: `
@@ -147,30 +201,30 @@ import { LanguageService } from '../../services/language.service';
           KT<span>C</span>
         </a>
         <button class="lang-toggle" (click)="langService.toggleLanguage()">
-          <span class="flag">{{ langService.currentLang() === 'en' ? '🇦🇪' : '🇺🇸' }}</span>
           {{ langService.currentLang() === 'en' ? 'Arabic' : 'English' }}
+          <span>{{ langService.currentLang() === 'en' ? '🇦🇪' : '🇺🇸' }}</span>
         </button>
       </div>
 
       <div class="links">
-        <a class="nav-link" routerLink="/dashboard"       routerLinkActive="active"><i data-lucide="home"></i>{{ 'NAVBAR.DASHBOARD' | translate }}</a>
-        <a class="nav-link" routerLink="/attendance"      routerLinkActive="active"><i data-lucide="calendar"></i>{{ 'NAVBAR.ATTENDANCE' | translate }}</a>
-        <a class="nav-link" routerLink="/profile"         routerLinkActive="active"><i data-lucide="user"></i>{{ 'NAVBAR.PROFILE' | translate }}</a>
-        <a class="nav-link" routerLink="/holiday-request" routerLinkActive="active"><i data-lucide="plane"></i>{{ 'NAVBAR.HOLIDAY_REQUEST' | translate }}</a>
-        <a class="nav-link" routerLink="/admin"           routerLinkActive="active" *ngIf="auth.isAdmin || auth.isManager"><i data-lucide="shield"></i>{{ 'NAVBAR.ADMIN_PANEL' | translate }}</a>
+        <a class="nav-link" routerLink="/dashboard"       routerLinkActive="active"><i data-lucide="home"></i> <span>{{ 'NAVBAR.DASHBOARD' | translate }}</span></a>
+        <a class="nav-link" routerLink="/attendance"      routerLinkActive="active"><i data-lucide="calendar"></i> <span>{{ 'NAVBAR.ATTENDANCE' | translate }}</span></a>
+        <a class="nav-link" routerLink="/profile"         routerLinkActive="active"><i data-lucide="user"></i> <span>{{ 'NAVBAR.PROFILE' | translate }}</span></a>
+        <a class="nav-link" routerLink="/holiday-request" routerLinkActive="active"><i data-lucide="plane"></i> <span>{{ 'NAVBAR.HOLIDAY_REQUEST' | translate }}</span></a>
+        <a class="nav-link" routerLink="/admin"           routerLinkActive="active" *ngIf="auth.isAdmin || auth.isManager"><i data-lucide="shield"></i> <span>{{ 'NAVBAR.ADMIN_PANEL' | translate }}</span></a>
       </div>
 
       <div class="user-area">
-        <div class="avatar-wrapper">
+        <div class="user-profile">
           <div class="avatar">{{ initial }}</div>
-        </div>
-        <div class="user-info">
-          <span class="user-name">{{ auth.currentUser?.name }}</span>
-          <span class="user-id">{{ 'NAVBAR.USER_ID' | translate }}: {{ auth.currentUser?.id }}</span>
+          <div class="user-info">
+            <span class="user-name">{{ auth.currentUser?.name }}</span>
+            <span class="user-id">#{{ auth.currentUser?.id }}</span>
+          </div>
         </div>
         <button class="btn-logout" (click)="logout()">
           <i data-lucide="log-out"></i>
-          {{ 'NAVBAR.LOGOUT' | translate }}
+          <span>{{ 'NAVBAR.LOGOUT' | translate }}</span>
         </button>
       </div>
     </nav>

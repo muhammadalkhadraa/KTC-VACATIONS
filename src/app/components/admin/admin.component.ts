@@ -17,17 +17,18 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   imports: [CommonModule, FormsModule, TranslateModule],
   styles: [`
     .tab-bar { 
-      display: flex; gap: 12px; margin-bottom: 32px; flex-wrap: wrap; 
-      background: var(--accent-soft); padding: 8px; border-radius: var(--radius-sm);
+      display: flex; gap: 8px; margin-bottom: 32px; flex-wrap: wrap; 
+      background: var(--bg-surface); padding: 6px; border-radius: var(--radius-sm);
+      border: 1px solid var(--glass-border);
     }
     .tab {
-      padding: 12px 24px; border-radius: var(--radius-sm); border: 1px solid transparent;
+      padding: 10px 20px; border-radius: 8px; border: 1px solid transparent;
       background: transparent; color: var(--text-muted); font-family: 'Outfit', sans-serif;
-      font-weight: 700; font-size: .95rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      font-weight: 700; font-size: .9rem; cursor: pointer; transition: all 0.3s ease;
       display: flex; align-items: center; gap: 10px;
     }
-    .tab:hover { color: var(--primary); background: rgba(255,255,255,0.4); }
-    .tab.active { background: var(--white); color: var(--primary); border-color: var(--glass-border); box-shadow: var(--shadow-sm); }
+    .tab:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.03); }
+    .tab.active { background: var(--accent-soft); color: var(--primary); border-color: rgba(0, 163, 255, 0.1); }
     .tab i { width: 18px; }
 
     .action-btn {
@@ -36,35 +37,35 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
       display: inline-flex; align-items: center; gap: 6px;
     }
-    .btn-approve { background: #ECFDF5; color: #10B981; border-color: #D1FAE5; }
-    .btn-approve:hover { background: #10B981; color: white; transform: translateY(-1px); }
-    .btn-reject  { background: #FEF2F2; color: #EF4444; border-color: #FEE2E2; }
-    .btn-reject:hover  { background: #EF4444; color: white; transform: translateY(-1px); }
+    .btn-approve { background: rgba(52, 211, 153, 0.05); color: var(--success); border-color: rgba(52, 211, 153, 0.2); }
+    .btn-approve:hover { background: var(--success); color: white; transform: translateY(-1px); }
+    .btn-reject  { background: rgba(255, 75, 92, 0.05); color: var(--danger); border-color: rgba(255, 75, 92, 0.2); }
+    .btn-reject:hover  { background: var(--danger); color: white; transform: translateY(-1px); }
     
     .role-badge-top {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 16px; border-radius: var(--radius-sm);
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 12px 20px; border-radius: var(--radius-sm);
       font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;
-      margin-bottom: 24px; box-shadow: var(--shadow-sm);
+      margin-bottom: 32px; border: 1px solid var(--glass-border);
     }
     
-    .emp-row td:first-child { font-weight: 700; color: var(--primary); }
+    .emp-row td:first-child { font-weight: 700; color: var(--text-main); }
     
     select {
-      background: var(--sky); border: 1px solid var(--glass-border);
+      background: var(--bg-secondary); border: 1px solid var(--glass-border);
       border-radius: var(--radius-sm); padding: 8px 12px;
       font-family: 'Inter'; font-size: 0.85rem; color: var(--text-main); font-weight: 600;
       outline: none; cursor: pointer;
     }
-    select:focus { border-color: var(--accent); }
+    select:focus { border-color: var(--primary); }
 
-    .btn-toggle-on { background: var(--success); color: white; }
-    .btn-toggle-off { background: var(--text-light); color: white; }
+    .btn-toggle-on { background: var(--success); color: white; box-shadow: 0 0 10px rgba(52, 211, 153, 0.2); }
+    .btn-toggle-off { background: var(--text-dim); color: white; }
     
     .empty-state {
-      display: flex; flex-direction: column; align-items: center; padding: 60px; color: var(--text-muted); gap: 16px;
+      display: flex; flex-direction: column; align-items: center; padding: 80px 40px; color: var(--text-muted); gap: 20px; text-align: center;
     }
-    .empty-state i { font-size: 3rem; color: var(--accent); opacity: 0.4; }
+    .empty-state i { font-size: 3.5rem; color: var(--text-dim); }
   `],
   template: `
     <div class="page-wrapper">

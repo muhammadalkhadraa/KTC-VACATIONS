@@ -13,59 +13,59 @@ import { Subscription } from 'rxjs';
   imports: [CommonModule, RouterModule, TranslateModule],
   styles: [`
     .profile-header {
-      background: linear-gradient(135deg, var(--primary), var(--primary-light));
-      border-radius: var(--radius); padding: 40px;
-      color: white; display: flex; align-items: center; gap: 32px;
-      margin-bottom: 32px; flex-wrap: wrap;
+      background: var(--bg-surface);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius); padding: 48px;
+      color: var(--text-main); display: flex; align-items: center; gap: 40px;
+      margin-bottom: 40px; flex-wrap: wrap;
       box-shadow: var(--shadow-xl);
       position: relative;
       overflow: hidden;
     }
-    .profile-header::after {
-      content: ""; position: absolute; top: -50%; right: -20%;
-      width: 300px; height: 300px; background: rgba(255,255,255,0.05);
-      border-radius: 50%; transform: rotate(-15deg);
+    .profile-header::before {
+      content: ""; position: absolute; top: -100px; right: -100px;
+      width: 300px; height: 300px; background: radial-gradient(circle, rgba(0, 163, 255, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
     }
     .avatar-big {
-      width: 100px; height: 100px; border-radius: 24px;
-      background: rgba(255,255,255,0.15); border: 2px solid rgba(255,255,255,0.3);
-      backdrop-filter: blur(10px);
+      width: 120px; height: 120px; border-radius: 24px;
+      background: var(--bg-secondary); border: 2px solid var(--primary);
       display: flex; align-items: center; justify-content: center;
-      font-size: 2.5rem; font-weight: 800; flex-shrink: 0;
+      font-size: 3rem; font-weight: 800; flex-shrink: 0;
       font-family: 'Outfit', sans-serif;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      box-shadow: 0 0 30px rgba(0, 163, 255, 0.2);
     }
-    .prof-name { font-size: 2rem; font-weight: 800; margin-bottom: 4px; font-family: 'Outfit', sans-serif; }
-    .prof-sub  { opacity: .9; font-size: 1rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+    .prof-name { font-size: 2.25rem; font-weight: 800; margin-bottom: 8px; font-family: 'Outfit', sans-serif; }
+    .prof-sub  { color: var(--text-muted); font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 8px; }
     .prof-badge {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: rgba(255,255,255,0.2);
-      border-radius: var(--radius-sm); padding: 6px 14px; 
-      font-size: .85rem; font-weight: 700; margin-top: 16px;
-      backdrop-filter: blur(5px);
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(0, 163, 255, 0.2);
+      border-radius: var(--radius-sm); padding: 8px 16px; 
+      font-size: .85rem; font-weight: 700; margin-top: 20px;
+      color: var(--primary);
     }
     
     .info-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(200px,1fr)); gap: 20px; }
     .info-item { 
-      background: var(--white); border: 1px solid var(--glass-border);
-      border-radius: var(--radius-sm); padding: 20px;
-      box-shadow: var(--shadow-sm);
-      transition: all 0.2s;
+      background: var(--bg-secondary); border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm); padding: 24px;
+      transition: all 0.3s ease;
     }
-    .info-item:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--accent); }
-    .info-lbl  { font-size: .75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
-    .info-val  { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
+    .info-item:hover { transform: translateY(-4px); border-color: var(--primary); background: rgba(255, 255, 255, 0.02); }
+    .info-lbl  { font-size: .75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .info-val  { font-size: 1.1rem; font-weight: 700; color: var(--text-main); }
     
-    .hol-bar   { background: var(--sky); border-radius: var(--radius-full); height: 14px; overflow: hidden; margin: 16px 0; border: 1px solid var(--accent-soft); }
-    .hol-fill  { height: 100%; background: linear-gradient(90deg, var(--accent), var(--primary-light)); border-radius: var(--radius-full); transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
-    .hol-meta  { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; margin-top: 20px; }
-    .hol-stat  { display: flex; flex-direction: column; gap: 4px; }
-    .hol-stat span { font-size: .8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; }
-    .hol-stat strong { font-size: 1.2rem; color: var(--primary); font-family: 'Outfit'; }
+    .hol-bar   { background: var(--bg-secondary); border-radius: var(--radius-full); height: 8px; overflow: hidden; margin: 24px 0; border: 1px solid var(--glass-border); }
+    .hol-fill  { height: 100%; background: var(--primary); border-radius: var(--radius-full); transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); box-shadow: 0 0 15px var(--primary); }
+    .hol-meta  { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; margin-top: 24px; }
+    .hol-stat  { display: flex; flex-direction: column; gap: 6px; }
+    .hol-stat span { font-size: .75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+    .hol-stat strong { font-size: 1.5rem; color: var(--text-main); font-family: 'Outfit'; }
     
     .btn-request {
       width: 100%; text-align: center;
-      margin-top: 24px;
+      margin-top: 32px;
     }
 
     .empty-state {
@@ -73,11 +73,14 @@ import { Subscription } from 'rxjs';
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px;
+      padding: 60px 20px;
       color: var(--text-muted);
-      gap: 12px;
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius);
+      border: 1px dashed var(--glass-border);
     }
-    .empty-state i { font-size: 2.5rem; color: var(--accent); opacity: 0.5; }
+    .empty-state i { font-size: 3rem; color: var(--text-dim); }
   `],
   template: `
     <div class="page-wrapper" *ngIf="emp">

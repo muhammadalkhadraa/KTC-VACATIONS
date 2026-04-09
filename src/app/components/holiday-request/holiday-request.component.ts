@@ -16,28 +16,29 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   imports: [CommonModule, FormsModule, TranslateModule],
   styles: [`
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
-    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+    @media (max-width: 1200px) { .two-col { grid-template-columns: 1fr; } }
     
     .balance-pill {
-      display: inline-flex; align-items: center; gap: 12px;
-      background: var(--accent-soft); border: 1px solid var(--accent);
-      border-radius: var(--radius-sm); padding: 14px 20px;
-      font-weight: 700; color: var(--primary); font-size: 1rem; margin-bottom: 24px;
-      box-shadow: var(--shadow-sm);
+      display: inline-flex; align-items: center; gap: 16px;
+      background: rgba(0, 163, 255, 0.05); 
+      border: 1px solid rgba(0, 163, 255, 0.1);
+      border-radius: var(--radius-sm); padding: 16px 24px;
+      font-weight: 700; color: var(--primary); font-size: 1.1rem; margin-bottom: 32px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
-    .balance-pill i { color: var(--primary-light); }
+    .balance-pill i { color: var(--primary); }
     
     .days-preview {
-      background: var(--sky); border-radius: var(--radius-sm); padding: 16px 20px;
-      font-weight: 700; color: var(--primary); font-size: .95rem; margin-bottom: 20px;
+      background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 20px;
+      font-weight: 700; color: var(--text-main); font-size: 1rem; margin-bottom: 24px;
       display: flex; align-items: center; gap: 12px;
-      border: 1px dashed var(--accent);
+      border: 1px solid var(--primary);
+      animation: glow 2s infinite alternate;
     }
-    .days-preview i { color: var(--accent); animation: bounce 2s infinite; }
     
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-4px); }
+    @keyframes glow {
+      from { box-shadow: 0 0 5px rgba(0, 163, 255, 0.1); border-color: rgba(0, 163, 255, 0.3); }
+      to { box-shadow: 0 0 15px rgba(0, 163, 255, 0.3); border-color: var(--primary); }
     }
 
     .empty-state {
@@ -45,13 +46,14 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 40px 20px;
+      padding: 60px 20px;
       color: var(--text-muted);
-      gap: 12px;
-      background: rgba(137, 207, 240, 0.05);
-      border-radius: var(--radius-sm);
+      gap: 16px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: var(--radius);
+      border: 1px dashed var(--glass-border);
     }
-    .empty-state i { font-size: 2rem; color: var(--accent); opacity: 0.6; }
+    .empty-state i { font-size: 3rem; color: var(--text-dim); }
   `],
   template: `
     <div class="page-wrapper">
