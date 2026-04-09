@@ -13,60 +13,101 @@ import { Subscription } from 'rxjs';
   imports: [CommonModule, TranslateModule],
   styles: [`
     .checkin-box {
-      display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
-      padding: 20px 24px; background: #D6F0FF; border-radius: 14px; margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap;
+      padding: 40px; background: var(--white); border-radius: var(--radius);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--shadow-xl);
+      position: relative; overflow: hidden;
     }
-    .live-time { font-size: 2rem; font-weight: 800; color: #1A5F7A; font-family: 'Poppins', sans-serif; }
-    .live-date { font-size: .85rem; color: #4a7a92; font-weight: 600; }
+    .checkin-box::before {
+      content: ""; position: absolute; top: -20px; right: -20px;
+      width: 100px; height: 100px; background: var(--accent-soft);
+      border-radius: 50%;
+    }
+    .time-area { display: flex; align-items: center; gap: 20px; }
+    .live-time { 
+      font-size: 3.5rem; font-weight: 800; color: var(--primary); 
+      font-family: 'Outfit', sans-serif; letter-spacing: -0.02em;
+    }
+    .live-date { font-size: 1rem; color: var(--text-muted); font-weight: 600; }
+    
     .btn-checkin {
-      padding: 12px 28px; border: none; border-radius: 12px;
-      font-family: 'Nunito', sans-serif; font-weight: 700; font-size: .95rem;
-      cursor: pointer; transition: .2s;
+      padding: 16px 40px; border: none; border-radius: var(--radius-sm);
+      font-family: 'Outfit', sans-serif; font-weight: 700; font-size: 1.1rem;
+      cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: var(--shadow-md);
     }
-    .btn-in  { background: linear-gradient(135deg,#4CAF82,#2d9e6a); color: white; }
-    .btn-in:hover  { transform: translateY(-2px); box-shadow: 0 5px 16px rgba(76,175,130,.4); }
-    .btn-out { background: linear-gradient(135deg,#F5A623,#e08c00); color: white; }
-    .btn-out:hover { transform: translateY(-2px); box-shadow: 0 5px 16px rgba(245,166,35,.4); }
-    .checked-msg { font-weight: 700; color: #4a7a92; }
-    .filter-row { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
-    .filter-row span { font-weight: 700; color: #1A5F7A; font-size: .88rem; }
+    .btn-in  { background: linear-gradient(135deg, var(--success), #2d9e6a); color: white; }
+    .btn-in:hover  { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(16,185,129,0.3); }
+    .btn-out { background: linear-gradient(135deg, var(--warning), #e08c00); color: white; }
+    .btn-out:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(245,158,11,0.3); }
+    
+    .checked-msg { 
+      font-weight: 700; color: var(--primary); 
+      display: flex; align-items: center; gap: 8px;
+      background: var(--sky); padding: 12px 20px; border-radius: var(--radius-sm);
+    }
+
+    .filter-row { display: flex; gap: 16px; margin: 32px 0 20px; align-items: center; }
+    .filter-lbl { font-weight: 800; color: var(--primary); font-size: .85rem; text-transform: uppercase; letter-spacing: 0.1em; }
     .pill {
-      padding: 6px 16px; border-radius: 20px; border: 2px solid #C5E8FB;
-      background: white; color: #4a7a92; font-family: 'Nunito', sans-serif;
-      font-weight: 700; font-size: .8rem; cursor: pointer; transition: .2s;
+      padding: 8px 20px; border-radius: var(--radius-full); border: 1px solid var(--glass-border);
+      background: var(--white); color: var(--text-muted); font-family: 'Inter', sans-serif;
+      font-weight: 600; font-size: .85rem; cursor: pointer; transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
     }
-    .pill.active { background: #89CFF0; color: white; border-color: #89CFF0; }
+    .pill:hover { border-color: var(--accent); color: var(--primary); }
+    .pill.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: var(--shadow-md); }
   `],
   template: `
     <div class="page-wrapper">
-      <h1 class="page-title">📋 {{ 'ATTENDANCE.TITLE' | translate | slice:0:-8 }} <span>{{ 'ATTENDANCE.TRACKER_SPAN' | translate }}</span></h1>
+      <h1 class="page-title"><i data-lucide="clock-7"></i> {{ 'ATTENDANCE.TITLE' | translate | slice:0:-8 }} <span>{{ 'ATTENDANCE.TRACKER_SPAN' | translate }}</span></h1>
 
       <!-- Check In / Out Box -->
-      <div class="card">
-        <div class="card-title">{{ 'ATTENDANCE.TODAY' | translate }}</div>
-        <div class="checkin-box">
+      <div class="checkin-box">
+        <div class="time-area">
+          <i data-lucide="watch" style="width: 48px; height: 48px; color: var(--accent);"></i>
           <div>
             <div class="live-time">{{ liveTime }}</div>
             <div class="live-date">{{ dateLabel }}</div>
           </div>
+        </div>
+        
+        <div class="action-area">
           <ng-container [ngSwitch]="status.state">
-            <button *ngSwitchCase="'none'" class="btn-checkin btn-in" (click)="checkIn()">{{ 'ATTENDANCE.BTN_CHECKIN' | translate }}</button>
-            <ng-container *ngSwitchCase="'in'">
-              <span class="checked-msg">{{ 'ATTENDANCE.CHECKED_IN_AT' | translate:{time: status.checkInTime} }}</span>
-              <button class="btn-checkin btn-out" (click)="checkOut()">{{ 'ATTENDANCE.BTN_CHECKOUT' | translate }}</button>
-            </ng-container>
-            <span *ngSwitchCase="'out'" class="checked-msg">
-              {{ 'ATTENDANCE.DONE_MSG' | translate }} &nbsp; 
-              {{ 'DASHBOARD.COL_IN' | translate }}: {{ status.checkInTime }} &nbsp;|&nbsp; 
-              {{ 'DASHBOARD.COL_OUT' | translate }}: {{ status.checkOutTime }}
-            </span>
+            <button *ngSwitchCase="'none'" class="btn-checkin btn-in" (click)="checkIn()">
+              <i data-lucide="log-in"></i>
+              {{ 'ATTENDANCE.BTN_CHECKIN' | translate }}
+            </button>
+            <div *ngSwitchCase="'in'" style="display: flex; flex-direction: column; gap: 16px; align-items: flex-end;">
+              <span class="checked-msg">
+                <i data-lucide="check-circle-2" style="color: var(--success);"></i>
+                {{ 'ATTENDANCE.CHECKED_IN_AT' | translate:{time: status.checkInTime} }}
+              </span>
+              <button class="btn-checkin btn-out" (click)="checkOut()">
+                <i data-lucide="log-out"></i>
+                {{ 'ATTENDANCE.BTN_CHECKOUT' | translate }}
+              </button>
+            </div>
+            <div *ngSwitchCase="'out'" class="checked-msg" style="flex-direction: column; align-items: flex-start;">
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 1.1rem; color: var(--success); margin-bottom: 4px;">
+                <i data-lucide="party-popper"></i>
+                {{ 'ATTENDANCE.DONE_MSG' | translate }}
+              </div>
+              <div style="font-size: 0.85rem; color: var(--text-muted);">
+                <i data-lucide="arrow-right" style="width: 12px;"></i> {{ 'DASHBOARD.COL_IN' | translate }}: <strong>{{ status.checkInTime }}</strong>
+                &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+                <i data-lucide="arrow-left" style="width: 12px;"></i> {{ 'DASHBOARD.COL_OUT' | translate }}: <strong>{{ status.checkOutTime }}</strong>
+              </div>
+            </div>
           </ng-container>
         </div>
       </div>
 
       <!-- Filter -->
       <div class="filter-row">
-        <span>{{ 'ATTENDANCE.FILTER' | translate }}</span>
+        <span class="filter-lbl"><i data-lucide="filter" style="width: 14px; vertical-align: middle;"></i> {{ 'ATTENDANCE.FILTER' | translate }}</span>
         <button class="pill" [class.active]="filter==='All'"     (click)="filter='All'">{{ 'DASHBOARD.STATUS_PENDING' | translate: {defaultValue: 'All'} }}</button>
         <button class="pill" [class.active]="filter==='Present'" (click)="filter='Present'">{{ 'DASHBOARD.STATUS_PRESENT' | translate }}</button>
         <button class="pill" [class.active]="filter==='Absent'"  (click)="filter='Absent'">{{ 'DASHBOARD.STATUS_ABSENT' | translate }}</button>
@@ -75,27 +116,29 @@ import { Subscription } from 'rxjs';
 
       <!-- History Table -->
       <div class="card">
-        <div class="card-title">{{ 'ATTENDANCE.HISTORY' | translate }}</div>
-        <table>
-          <thead>
-            <tr>
-              <th>{{ 'DASHBOARD.COL_DATE' | translate }}</th>
-              <th>{{ 'ATTENDANCE.COL_DAY' | translate }}</th>
-              <th>{{ 'DASHBOARD.COL_STATUS' | translate }}</th>
-              <th>{{ 'DASHBOARD.COL_IN' | translate }}</th>
-              <th>{{ 'DASHBOARD.COL_OUT' | translate }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let r of filtered">
-              <td>{{ formatDate(r.date) }}</td>
-              <td>{{ dayName(r.date) }}</td>
-              <td><span class="badge" [ngClass]="badgeClass(r.status)">{{ getStatusLabel(r.status) }}</span></td>
-              <td>{{ r.checkIn }}</td>
-              <td>{{ r.checkOut }}</td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="card-title"><i data-lucide="history"></i>{{ 'ATTENDANCE.HISTORY' | translate }}</div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>{{ 'DASHBOARD.COL_DATE' | translate }}</th>
+                <th>{{ 'ATTENDANCE.COL_DAY' | translate }}</th>
+                <th>{{ 'DASHBOARD.COL_STATUS' | translate }}</th>
+                <th>{{ 'DASHBOARD.COL_IN' | translate }}</th>
+                <th>{{ 'DASHBOARD.COL_OUT' | translate }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of filtered">
+                <td style="font-weight: 600;">{{ formatDate(r.date) }}</td>
+                <td style="color: var(--text-muted);">{{ dayName(r.date) }}</td>
+                <td><span class="badge" [ngClass]="badgeClass(r.status)">{{ getStatusLabel(r.status) }}</span></td>
+                <td style="font-family: 'Outfit'; font-weight: 600;">{{ r.checkIn }}</td>
+                <td style="font-family: 'Outfit'; font-weight: 600;">{{ r.checkOut }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   `
@@ -115,6 +158,18 @@ export class AttendanceComponent implements OnInit, OnDestroy {
     private toast: ToastService,
     private translate: TranslateService
   ) {}
+
+  ngAfterViewInit() {
+    this.refreshIcons();
+  }
+
+  refreshIcons() {
+    setTimeout(() => {
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }, 100);
+  }
 
   ngOnInit(): void {
     const id = this.auth.currentUser!.id;

@@ -16,102 +16,119 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #D6F0FF 0%, #89CFF0 50%, #2E86AB 100%);
+      padding: 20px;
+      background: var(--sky);
+      position: relative;
+      overflow: hidden;
+    }
+    .bg-circle {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+      opacity: 0.1;
+      z-index: 0;
     }
     .card {
-      background: white;
-      border-radius: 24px;
+      background: var(--glass-bg);
+      backdrop-filter: var(--glass-blur);
+      -webkit-backdrop-filter: var(--glass-blur);
+      border: 1px solid var(--glass-border);
+      border-radius: 32px;
       padding: 48px 40px;
-      width: 390px;
-      box-shadow: 0 8px 32px rgba(30,95,122,.18);
+      width: 440px;
+      box-shadow: var(--shadow-xl);
       text-align: center;
+      z-index: 10;
+      animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
     .logo {
-      font-family: 'Poppins', sans-serif;
-      font-size: 2.6rem;
-      font-weight: 700;
-      color: #1A5F7A;
-      letter-spacing: 4px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 3.5rem;
+      font-weight: 800;
+      color: var(--primary);
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
     }
-    .logo span { color: #89CFF0; }
+    .logo span { color: var(--accent); }
     .subtitle {
-      color: #4a7a92;
-      font-size: .82rem;
-      margin-bottom: 32px;
+      color: var(--text-muted);
+      font-size: .85rem;
+      margin-bottom: 40px;
       font-weight: 700;
-      letter-spacing: 1.5px;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
     }
-    h2 { color: #1e3a4a; margin-bottom: 24px; font-size: 1.2rem; font-family: 'Poppins', sans-serif; }
-    .form-group { margin-bottom: 16px; text-align: left; }
+    h2 { 
+      color: var(--primary); 
+      margin-bottom: 32px; 
+      font-size: 1.5rem; 
+      font-family: 'Outfit', sans-serif; 
+      font-weight: 700;
+    }
+    .form-group { margin-bottom: 24px; text-align: left; }
     .form-group label {
-      display: block;
-      font-size: .78rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .8rem;
       font-weight: 700;
-      color: #4a7a92;
+      color: var(--text-muted);
       text-transform: uppercase;
-      letter-spacing: .5px;
-      margin-bottom: 6px;
+      letter-spacing: .05em;
+      margin-bottom: 10px;
     }
-    .form-group input,
-    .form-group select {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid #C5E8FB;
-      border-radius: 12px;
-      font-family: 'Nunito', sans-serif;
-      font-size: .95rem;
-      color: #1e3a4a;
-      background: #F8FCFF;
-      outline: none;
-      transition: .2s;
+    .form-group i { color: var(--accent); width: 16px; }
+    
+    .divider { border: none; border-top: 1px solid var(--glass-border); margin: 32px 0; }
+    
+    .note { 
+      font-size: .8rem; 
+      color: var(--text-muted); 
+      margin-top: 20px; 
+      line-height: 1.6;
     }
-    .form-group input:focus,
-    .form-group select:focus { border-color: #89CFF0; background: white; }
-    .btn {
-      width: 100%;
-      padding: 14px;
-      background: linear-gradient(135deg, #2E86AB, #1A5F7A);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-family: 'Nunito', sans-serif;
-      font-size: 1rem;
+    .register-link {
+      color: var(--primary-light);
       font-weight: 700;
       cursor: pointer;
-      margin-top: 8px;
-      transition: .2s;
-      letter-spacing: .5px;
+      text-decoration: none;
+      transition: color 0.2s;
     }
-    .btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(46,134,171,.4); }
-    .note { font-size: .72rem; color: #8ab4c8; margin-top: 18px; line-height: 1.6; }
-    .divider { border: none; border-top: 1px solid #D6F0FF; margin: 20px 0; }
+    .register-link:hover { color: var(--accent); }
   `],
   template: `
     <div class="login-page">
+      <div class="bg-circle" style="top: -20%; left: -10%;"></div>
+      <div class="bg-circle" style="bottom: -20%; right: -10%;"></div>
+      
       <div class="card">
         <div class="logo">KT<span>C</span></div>
         <div class="subtitle">{{ 'LOGIN.SUBTITLE' | translate }}</div>
         <h2>{{ 'LOGIN.HEADER' | translate }}</h2>
 
         <div class="form-group">
-          <label for="empId">{{ 'LOGIN.EMP_ID' | translate }}</label>
+          <label for="empId"><i data-lucide="user"></i> {{ 'LOGIN.EMP_ID' | translate }}</label>
           <input id="empId" name="empId" type="text" [(ngModel)]="empId" placeholder="e.g. EMP001" (keyup.enter)="login()" />
         </div>
 
         <div class="form-group">
-          <label for="password">{{ 'LOGIN.PASSWORD' | translate }}</label>
-          <input id="password" name="password" type="password" [(ngModel)]="password" placeholder="Enter your password" (keyup.enter)="login()" />
+          <label for="password"><i data-lucide="lock"></i> {{ 'LOGIN.PASSWORD' | translate }}</label>
+          <input id="password" name="password" type="password" [(ngModel)]="password" placeholder="••••••••" (keyup.enter)="login()" />
         </div>
 
-        <button class="btn" (click)="login()">{{ 'LOGIN.LOGIN_BTN' | translate }}</button>
+        <button class="btn-primary" (click)="login()" style="width: 100%; padding: 16px;">
+          <i data-lucide="log-in"></i>
+          {{ 'LOGIN.LOGIN_BTN' | translate }}
+        </button>
 
         <hr class="divider">
+        
         <p class="note">
           <strong>{{ 'LOGIN.NOTE_TITLE' | translate }}</strong> {{ 'LOGIN.NOTE_BODY' | translate }}
         </p>
         <p class="note">
-          {{ 'LOGIN.NO_ACCOUNT' | translate }} <a (click)="gotoRegister()">{{ 'LOGIN.REGISTER_LINK' | translate }}</a>.
+          {{ 'LOGIN.NO_ACCOUNT' | translate }} <a class="register-link" (click)="gotoRegister()">{{ 'LOGIN.REGISTER_LINK' | translate }}</a>
         </p>
       </div>
     </div>
@@ -127,6 +144,18 @@ export class LoginComponent {
     private router:    Router,
     private translate: TranslateService
   ) {}
+
+  ngAfterViewInit() {
+    this.refreshIcons();
+  }
+
+  refreshIcons() {
+    setTimeout(() => {
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }, 100);
+  }
 
   gotoRegister() { this.router.navigate(['/register']); }
 

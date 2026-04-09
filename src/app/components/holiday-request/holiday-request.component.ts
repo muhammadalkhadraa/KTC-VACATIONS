@@ -15,89 +15,124 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   standalone: true,
   imports: [CommonModule, FormsModule, TranslateModule],
   styles: [`
-    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+    
     .balance-pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: #D6F0FF; border-radius: 12px; padding: 10px 18px;
-      font-weight: 700; color: #1A5F7A; font-size: .9rem; margin-bottom: 20px;
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--accent-soft); border: 1px solid var(--accent);
+      border-radius: var(--radius-sm); padding: 14px 20px;
+      font-weight: 700; color: var(--primary); font-size: 1rem; margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
     }
+    .balance-pill i { color: var(--primary-light); }
+    
     .days-preview {
-      background: #D6F0FF; border-radius: 10px; padding: 10px 16px;
-      font-weight: 700; color: #1A5F7A; font-size: .9rem; margin-bottom: 16px;
-      display: flex; align-items: center; gap: 8px;
+      background: var(--sky); border-radius: var(--radius-sm); padding: 16px 20px;
+      font-weight: 700; color: var(--primary); font-size: .95rem; margin-bottom: 20px;
+      display: flex; align-items: center; gap: 12px;
+      border: 1px dashed var(--accent);
     }
-    .req-table td, .req-table th { font-size: .85rem; }
+    .days-preview i { color: var(--accent); animation: bounce 2s infinite; }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-4px); }
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      gap: 12px;
+      background: rgba(137, 207, 240, 0.05);
+      border-radius: var(--radius-sm);
+    }
+    .empty-state i { font-size: 2rem; color: var(--accent); opacity: 0.6; }
   `],
   template: `
     <div class="page-wrapper">
-      <h1 class="page-title">✈️ {{ 'HOLIDAY_REQUEST.TITLE' | translate | slice:0:-8 }} <span>{{ 'HOLIDAY_REQUEST.REQUEST_SPAN' | translate }}</span></h1>
+      <h1 class="page-title"><i data-lucide="plane"></i> {{ 'HOLIDAY_REQUEST.TITLE' | translate | slice:0:-8 }} <span>{{ 'HOLIDAY_REQUEST.REQUEST_SPAN' | translate }}</span></h1>
 
       <div class="two-col">
         <!-- Submit form -->
         <div class="card" *ngIf="!auth.isGeneralManager; else adminNote">
-          <div class="card-title">{{ 'HOLIDAY_REQUEST.SUBMIT_TITLE' | translate }}</div>
+          <div class="card-title"><i data-lucide="send"></i>{{ 'HOLIDAY_REQUEST.SUBMIT_TITLE' | translate }}</div>
 
           <div class="balance-pill">
+            <i data-lucide="wallet"></i>
             {{ 'HOLIDAY_REQUEST.REMAINING_BALANCE' | translate }} <strong>{{ remaining }} {{ 'DASHBOARD.COL_DAYS' | translate }}</strong>
           </div>
 
           <div class="form-group">
-            <label for="startDate">{{ 'HOLIDAY_REQUEST.START_DATE' | translate }}</label>
+            <label for="startDate"><i data-lucide="calendar-plus" style="width: 14px; margin-right: 4px;"></i>{{ 'HOLIDAY_REQUEST.START_DATE' | translate }}</label>
             <input id="startDate" name="startDate" type="date" [(ngModel)]="startDate" [min]="today" (change)="calcPreview()" />
           </div>
 
           <div class="form-group">
-            <label for="end_date">{{ 'HOLIDAY_REQUEST.END_DATE' | translate }}</label>
+            <label for="end_date"><i data-lucide="calendar-minus" style="width: 14px; margin-right: 4px;"></i>{{ 'HOLIDAY_REQUEST.END_DATE' | translate }}</label>
             <input id="end_date" name="end_date" type="date" [(ngModel)]="end_date" [min]="startDate || today" (change)="calcPreview()" />
           </div>
 
           <div class="days-preview" *ngIf="previewDays > 0">
+            <i data-lucide="clock"></i>
             {{ 'HOLIDAY_REQUEST.DURATION' | translate }} <strong>{{ 'HOLIDAY_REQUEST.DAYS_COUNT' | translate:{count: previewDays} }}</strong>
           </div>
 
           <div class="form-group">
-            <label for="reason">{{ 'HOLIDAY_REQUEST.REASON' | translate }}</label>
+            <label for="reason"><i data-lucide="file-text" style="width: 14px; margin-right: 4px;"></i>{{ 'HOLIDAY_REQUEST.REASON' | translate }}</label>
             <textarea id="reason" name="reason" [(ngModel)]="reason" [placeholder]="'HOLIDAY_REQUEST.REASON_PLACEHOLDER' | translate"></textarea>
           </div>
 
-          <button class="btn-primary" (click)="submit()">{{ 'HOLIDAY_REQUEST.SUBMIT_BTN' | translate }}</button>
+          <button class="btn-primary" (click)="submit()" style="width: 100%;">
+            <i data-lucide="check-square"></i>
+            {{ 'HOLIDAY_REQUEST.SUBMIT_BTN' | translate }}
+          </button>
         </div>
+        
         <ng-template #adminNote>
           <div class="card">
-            <div class="card-title">{{ 'HOLIDAY_REQUEST.SUBMIT_TITLE' | translate }}</div>
+            <div class="card-title"><i data-lucide="info"></i>{{ 'HOLIDAY_REQUEST.SUBMIT_TITLE' | translate }}</div>
             <div class="empty-state">
-              <span class="emoji">ℹ️</span>
-              {{ 'HOLIDAY_REQUEST.GM_NOTE' | translate }}
+              <i data-lucide="shield-alert"></i>
+              <p style="text-align: center;">{{ 'HOLIDAY_REQUEST.GM_NOTE' | translate }}</p>
             </div>
           </div>
         </ng-template>
 
         <!-- My requests -->
         <div class="card">
-          <div class="card-title">{{ 'HOLIDAY_REQUEST.MY_REQUESTS' | translate }}</div>
+          <div class="card-title"><i data-lucide="history"></i>{{ 'HOLIDAY_REQUEST.MY_REQUESTS' | translate }}</div>
           <ng-container *ngIf="myRequests.length; else noReqs">
-            <table class="req-table">
-              <thead>
-                <tr>
-                  <th>{{ 'DASHBOARD.COL_PERIOD' | translate }}</th>
-                  <th>{{ 'DASHBOARD.COL_DAYS' | translate }}</th>
-                  <th>{{ 'DASHBOARD.COL_STATUS' | translate }}</th>
-                  <th>{{ 'DASHBOARD.COL_APPROVAL' | translate }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let r of myRequests">
-                  <td>{{ fmt(r.startDate) }} –<br>{{ fmt(r.end_date) }}</td>
-                  <td>{{ r.days }}</td>
-                  <td><span class="badge" [ngClass]="bc(r.status)">{{ getStatusLabel(r.status) }}</span></td>
-                  <td>{{ approvalText(r) }}</td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="table-container">
+              <table class="req-table">
+                <thead>
+                  <tr>
+                    <th>{{ 'DASHBOARD.COL_PERIOD' | translate }}</th>
+                    <th>{{ 'DASHBOARD.COL_DAYS' | translate }}</th>
+                    <th>{{ 'DASHBOARD.COL_STATUS' | translate }}</th>
+                    <th>{{ 'DASHBOARD.COL_APPROVAL' | translate }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let r of myRequests">
+                    <td style="font-weight: 600; line-height: 1.4;">{{ fmt(r.startDate) }} –<br><span style="color: var(--text-muted); font-size: 0.8rem;">{{ fmt(r.end_date) }}</span></td>
+                    <td><span class="badge badge-pending" style="background: var(--sky); color: var(--primary);">{{ r.days }}</span></td>
+                    <td><span class="badge" [ngClass]="bc(r.status)">{{ getStatusLabel(r.status) }}</span></td>
+                    <td style="font-size: 0.8rem; color: var(--text-muted);">{{ approvalText(r) }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </ng-container>
           <ng-template #noReqs>
-            <div class="empty-state"><span class="emoji">📭</span>{{ 'HOLIDAY_REQUEST.NO_REQUESTS' | translate }}</div>
+            <div class="empty-state">
+              <i data-lucide="inbox"></i>
+              <p>{{ 'HOLIDAY_REQUEST.NO_REQUESTS' | translate }}</p>
+            </div>
           </ng-template>
         </div>
       </div>
@@ -122,6 +157,18 @@ export class HolidayRequestComponent implements OnInit, OnDestroy {
     public store: DataStoreService,
     private translate: TranslateService
   ) { }
+
+  ngAfterViewInit() {
+    this.refreshIcons();
+  }
+
+  refreshIcons() {
+    setTimeout(() => {
+      if ((window as any).lucide) {
+        (window as any).lucide.createIcons();
+      }
+    }, 100);
+  }
 
   get remaining() { return this.emp ? this.emp.totalHolidays - this.emp.usedHolidays : 0; }
   ngOnInit(): void {
