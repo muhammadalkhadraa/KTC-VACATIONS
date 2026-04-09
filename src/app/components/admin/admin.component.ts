@@ -32,8 +32,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     .tab i { width: 18px; }
 
     .action-btn {
-      padding: 8px 16px; border-radius: var(--radius-sm);
-      font-family: 'Inter', sans-serif; font-weight: 700; font-size: .8rem;
+      padding: 6px 12px; border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif; font-weight: 700; font-size: .75rem;
       cursor: pointer; border: 1px solid transparent; transition: all 0.2s;
       display: inline-flex; align-items: center; gap: 6px;
     }
@@ -42,6 +42,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     .btn-reject  { background: rgba(255, 75, 92, 0.05); color: var(--danger); border-color: rgba(255, 75, 92, 0.2); }
     .btn-reject:hover  { background: var(--danger); color: white; transform: translateY(-1px); }
     
+    .admin-table th, .admin-table td { padding: 12px 14px !important; font-size: 0.85rem; }
+    .emp-info-cell { display: flex; flex-direction: column; gap: 2px; }
+    .emp-id-sub { font-size: 0.7rem; color: var(--text-muted); font-weight: 500; font-family: 'Inter'; }
+
     .role-badge-top {
       display: inline-flex; align-items: center; gap: 10px;
       padding: 12px 20px; border-radius: var(--radius-sm);
@@ -53,9 +57,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
     
     select {
       background: var(--bg-secondary); border: 1px solid var(--glass-border);
-      border-radius: var(--radius-sm); padding: 8px 12px;
-      font-family: 'Inter'; font-size: 0.85rem; color: var(--text-main); font-weight: 600;
-      outline: none; cursor: pointer;
+      border-radius: 6px; padding: 6px 10px;
+      font-family: 'Inter'; font-size: 0.8rem; color: var(--text-main); font-weight: 600;
+      outline: none; cursor: pointer; max-width: 140px;
     }
     select:focus { border-color: var(--primary); }
 
@@ -246,41 +250,48 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
           <table class="admin-table">
             <thead>
               <tr>
-                <th>{{ 'DASHBOARD.COL_NAME' | translate }}</th>
-                <th>ID</th>
+                <th>{{ 'DASHBOARD.COL_EMPLOYEE' | translate }}</th>
                 <th>{{ 'DASHBOARD.COL_DEPT' | translate }}</th>
                 <th>{{ 'ADMIN.COL_POSITION' | translate: {defaultValue: 'Position'} }}</th>
                 <th>{{ 'PROFILE.ROLE' | translate }}</th>
-                <th>{{ 'ADMIN.COL_USED' | translate }}</th>
                 <th>{{ 'PROFILE.REMAINING' | translate }}</th>
                 <th>{{ 'ADMIN.COL_ACTIONS' | translate }}</th>
               </tr>
             </thead>
             <tbody>
               <tr *ngFor="let e of employees" class="emp-row">
-                <td>{{ e.name }}</td>
-                <td style="color: var(--text-muted); font-size: 0.85rem;">{{ e.id }}</td>
+                <td>
+                  <div class="emp-info-cell">
+                    <span>{{ e.name }}</span>
+                    <span class="emp-id-sub">#{{ e.id }}</span>
+                  </div>
+                </td>
                 <td>{{ e.department }}</td>
                 <td>
                   <select id="userPosition-{{e.id}}" name="userPosition-{{e.id}}" aria-label="Job Position" [ngModel]="e.position" (ngModelChange)="changeUserPosition(e, $event)">
                     <option *ngFor="let pos of jobPositions" [value]="pos">{{ pos }}</option>
                   </select>
                 </td>
-                <td style="display:flex; gap:12px; align-items:center;">
-                  <button class="action-btn" [ngClass]="{ 'btn-toggle-on': e.role === 'admin', 'btn-toggle-off': e.role !== 'admin' }" (click)="toggleAdmin(e)">
-                    <i [attr.data-lucide]="e.role === 'admin' ? 'star' : 'user'"></i>
-                    {{ e.role === 'admin' ? ('ADMIN.BTN_ADMIN_ON' | translate) : ('ADMIN.BTN_ADMIN_OFF' | translate) }}
-                  </button>
-                  <select id="userRole-{{e.id}}" name="userRole-{{e.id}}" aria-label="Access Role" [ngModel]="e.role" (ngModelChange)="changeUserRole(e, $event)">
-                    <option *ngFor="let r of accessRoles" [value]="r">{{ r }}</option>
-                  </select>
+                <td>
+                  <div style="display:flex; flex-direction:column; gap:6px;">
+                    <button class="action-btn" style="width:fit-content;" [ngClass]="{ 'btn-toggle-on': e.role === 'admin', 'btn-toggle-off': e.role !== 'admin' }" (click)="toggleAdmin(e)">
+                      <i [attr.data-lucide]="e.role === 'admin' ? 'star' : 'user'"></i>
+                      {{ e.role === 'admin' ? ('ADMIN.BTN_ADMIN_ON' | translate) : ('ADMIN.BTN_ADMIN_OFF' | translate) }}
+                    </button>
+                    <select id="userRole-{{e.id}}" name="userRole-{{e.id}}" aria-label="Access Role" [ngModel]="e.role" (ngModelChange)="changeUserRole(e, $event)" style="max-width: 120px;">
+                      <option *ngFor="let r of accessRoles" [value]="r">{{ r }}</option>
+                    </select>
+                  </div>
                 </td>
-                <td style="font-weight: 500;">{{ e.usedHolidays }} / {{ e.totalHolidays }}</td>
-                <td><strong style="color:var(--primary); font-family:'Outfit'; font-size:1.1rem;">{{ e.totalHolidays - e.usedHolidays }}</strong></td>
+                <td>
+                  <div style="display:flex; flex-direction:column;">
+                    <strong style="color:var(--primary); font-family:'Outfit'; font-size:1.1rem;">{{ e.totalHolidays - e.usedHolidays }}</strong>
+                    <span class="emp-id-sub">{{ e.usedHolidays }} / {{ e.totalHolidays }}</span>
+                  </div>
+                </td>
                 <td>
                   <button class="action-btn btn-reject" (click)="deleteUser(e)" [title]="'ADMIN.BTN_DELETE_USER' | translate">
                     <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
-                    <span>{{ 'ADMIN.BTN_DELETE' | translate }}</span>
                   </button>
                 </td>
               </tr>

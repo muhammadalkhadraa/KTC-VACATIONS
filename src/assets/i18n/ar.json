@@ -158,6 +158,8 @@
     "LBL_NEW_ROLE": "دور جديد",
     "BTN_ADD_ROLE": "إضافة دور",
     "BTN_DELETE": "حذف",
+    "BTN_APPROVE": "موافقة",
+    "BTN_REJECT": "رفض",
     "NO_ROLES": "لا توجد أدوار محددة بعد",
     "COL_ACTIONS": "الإجراءات",
     "USERS_TITLE": "👥 دليل المستخدمين",

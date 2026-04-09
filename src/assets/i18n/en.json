@@ -158,6 +158,8 @@
     "LBL_NEW_ROLE": "New role",
     "BTN_ADD_ROLE": "Add role",
     "BTN_DELETE": "Delete",
+    "BTN_APPROVE": "Approve",
+    "BTN_REJECT": "Reject",
     "NO_ROLES": "No roles defined yet",
     "COL_ACTIONS": "Actions",
     "USERS_TITLE": "👥 User Directory",
