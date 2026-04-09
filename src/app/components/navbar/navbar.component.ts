@@ -208,7 +208,7 @@ import { LanguageService } from '../../services/language.service';
       <div class="links">
         <a class="nav-link" routerLink="/dashboard"       routerLinkActive="active"><i data-lucide="home"></i> <span>{{ 'NAVBAR.DASHBOARD' | translate }}</span></a>
         <a class="nav-link" routerLink="/attendance"      routerLinkActive="active"><i data-lucide="calendar"></i> <span>{{ 'NAVBAR.ATTENDANCE' | translate }}</span></a>
-        <a class="nav-link" routerLink="/profile"         routerLinkActive="active"><i data-lucide="user"></i> <span>{{ 'NAVBAR.PROFILE' | translate }}</span></a>
+       <!-- <a class="nav-link" routerLink="/profile"         routerLinkActive="active"><i data-lucide="user"></i> <span>{{ 'NAVBAR.PROFILE' | translate }}</span></a>-->
         <a class="nav-link" routerLink="/holiday-request" routerLinkActive="active"><i data-lucide="plane"></i> <span>{{ 'NAVBAR.HOLIDAY_REQUEST' | translate }}</span></a>
         <a class="nav-link" routerLink="/admin"           routerLinkActive="active" *ngIf="auth.isAdmin || auth.isManager"><i data-lucide="shield"></i> <span>{{ 'NAVBAR.ADMIN_PANEL' | translate }}</span></a>
       </div>
@@ -231,10 +231,10 @@ import { LanguageService } from '../../services/language.service';
 })
 export class NavbarComponent {
   constructor(
-    public auth: AuthService, 
+    public auth: AuthService,
     private router: Router,
     public langService: LanguageService
-  ) {}
+  ) { }
 
   ngAfterViewInit() {
     this.refreshIcons();
