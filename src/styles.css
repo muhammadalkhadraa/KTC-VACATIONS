@@ -91,6 +91,20 @@ h1, h2, h3, h4, .brand-font {
   letter-spacing: -0.02em;
 }
 
+/* ── Brand Identity ── */
+.brand-logo {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+  filter: drop-shadow(0 0 10px rgba(0, 163, 255, 0.3));
+  display: block;
+}
+
+.brand-logo:hover {
+  transform: scale(1.05);
+}
+
 /* ── Layout Containers ── */
 .page-wrapper {
   padding: 48px 40px;

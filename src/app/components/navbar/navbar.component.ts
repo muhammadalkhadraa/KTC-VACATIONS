@@ -197,8 +197,7 @@ import { LanguageService } from '../../services/language.service';
     <nav *ngIf="auth.isLoggedIn">
       <div class="brand-area">
         <a class="logo" routerLink="/dashboard">
-          <i data-lucide="layout-dashboard"></i>
-          KT<span>C</span>
+          <img src="assets/logo.png" alt="KTC Logo" class="brand-logo">
         </a>
         <button class="lang-toggle" (click)="langService.toggleLanguage()">
           {{ langService.currentLang() === 'en' ? 'Arabic' : 'English' }}

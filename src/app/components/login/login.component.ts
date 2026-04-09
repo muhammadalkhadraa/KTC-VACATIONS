@@ -101,7 +101,9 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       <div class="bg-circle" style="bottom: -20%; right: -10%;"></div>
       
       <div class="card">
-        <div class="logo">KT<span>C</span></div>
+        <div class="logo">
+          <img src="assets/logo.png" alt="KTC Logo" class="brand-logo" style="height: 100px; margin: 0 auto 24px;">
+        </div>
         <div class="subtitle">{{ 'LOGIN.SUBTITLE' | translate }}</div>
         <h2>{{ 'LOGIN.HEADER' | translate }}</h2>
 
