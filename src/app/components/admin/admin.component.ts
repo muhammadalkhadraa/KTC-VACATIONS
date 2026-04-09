@@ -253,6 +253,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                 <th>{{ 'PROFILE.ROLE' | translate }}</th>
                 <th>{{ 'ADMIN.COL_USED' | translate }}</th>
                 <th>{{ 'PROFILE.REMAINING' | translate }}</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -276,6 +277,11 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                 </td>
                 <td style="font-weight: 500;">{{ e.usedHolidays }} / {{ e.totalHolidays }}</td>
                 <td><strong style="color:var(--primary); font-family:'Outfit'; font-size:1.1rem;">{{ e.totalHolidays - e.usedHolidays }}</strong></td>
+                <td>
+                  <button class="action-btn btn-reject" (click)="deleteUser(e)" [title]="'ADMIN.BTN_DELETE_USER' | translate">
+                    <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
+                  </button>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -452,6 +458,27 @@ export class AdminComponent implements OnInit, OnDestroy {
         this.toast.show(this.translate.instant('DASHBOARD.MSG_ERROR'), 'error');
       }
     });
+  }
+
+  deleteUser(emp: Employee): void {
+    const current = this.auth.currentUser;
+    if (current && current.id === emp.id) {
+      this.toast.show(this.translate.instant('ADMIN.MSG_DELETE_SELF_ERROR'), 'error');
+      return;
+    }
+
+    if (confirm(this.translate.instant('ADMIN.MSG_DELETE_CONFIRM', { name: emp.name }))) {
+      this.auth.deleteEmployee(emp.id).subscribe({
+        next: () => {
+          this.employees = this.employees.filter(e => e.id !== emp.id);
+          this.toast.show(this.translate.instant('ADMIN.MSG_DELETE_SUCCESS', { name: emp.name }));
+        },
+        error: (err) => {
+          console.error('Delete failed', err);
+          this.toast.show(this.translate.instant('DASHBOARD.MSG_ERROR'), 'error');
+        }
+      });
+    }
   }
 
   toggleAdmin(emp: Employee): void {

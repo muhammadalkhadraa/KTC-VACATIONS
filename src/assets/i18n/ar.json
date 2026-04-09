@@ -168,7 +168,11 @@
     "MSG_ROLE_REQ": "⚠️ اسم الدور مطلوب",
     "MSG_ROLE_CREATED": "✅ تم إنشاء الدور \"{{name}}\"",
     "MSG_ROLE_DELETED": "✅ تم حذف الدور \"{{name}}\"",
-    "MSG_UPDATE_SUCCESS": "✅ تم تحديث {{type}} لـ {{name}}"
+    "MSG_UPDATE_SUCCESS": "✅ تم تحديث {{type}} لـ {{name}}",
+    "BTN_DELETE_USER": "حذف المستخدم",
+    "MSG_DELETE_CONFIRM": "هل أنت متأكد أنك تريد حذف المستخدم {{name}} نهائياً؟",
+    "MSG_DELETE_SUCCESS": "تم حذف المستخدم {{name}} بنجاح.",
+    "MSG_DELETE_SELF_ERROR": "لا يمكنك حذف حسابك الخاص!"
   },
   "REGISTER": {
     "TITLE": "إنشاء حساب",

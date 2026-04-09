@@ -172,4 +172,9 @@ export class AuthService {
       })
     );
   }
+
+  /** Delete an employee (admin feature). */
+  deleteEmployee(empId: string) {
+    return from(this.supabaseSvc.supabase.from('employees').delete().eq('id', empId));
+  }
 }

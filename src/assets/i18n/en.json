@@ -168,7 +168,11 @@
     "MSG_ROLE_REQ": "⚠️ Role name is required",
     "MSG_ROLE_CREATED": "✅ Role \"{{name}}\" created",
     "MSG_ROLE_DELETED": "✅ Role \"{{name}}\" deleted",
-    "MSG_UPDATE_SUCCESS": "✅ {{type}} updated for {{name}}"
+    "MSG_UPDATE_SUCCESS": "✅ {{type}} updated for {{name}}",
+    "BTN_DELETE_USER": "Delete User",
+    "MSG_DELETE_CONFIRM": "Are you sure you want to permanently delete user {{name}}?",
+    "MSG_DELETE_SUCCESS": "User {{name}} has been deleted successfully.",
+    "MSG_DELETE_SELF_ERROR": "You cannot delete your own account!"
   },
   "REGISTER": {
     "TITLE": "Create an Account",
