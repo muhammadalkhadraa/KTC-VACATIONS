@@ -57,7 +57,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   `],
   template: `
     <div class="page-wrapper">
-      <h1 class="page-title"><i data-lucide="plane"></i> {{ 'HOLIDAY_REQUEST.TITLE' | translate | slice:0:-8 }} <span>{{ 'HOLIDAY_REQUEST.REQUEST_SPAN' | translate }}</span></h1>
+      <h1 class="page-title"><i data-lucide="plane"></i> {{ 'HOLIDAY_REQUEST.TITLE' | translate }}</h1>
 
       <div class="two-col">
         <!-- Submit form -->

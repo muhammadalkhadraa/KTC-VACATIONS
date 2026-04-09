@@ -62,7 +62,7 @@ import { Subscription } from 'rxjs';
   `],
   template: `
     <div class="page-wrapper">
-      <h1 class="page-title"><i data-lucide="clock-7"></i> {{ 'ATTENDANCE.TITLE' | translate | slice:0:-8 }} <span>{{ 'ATTENDANCE.TRACKER_SPAN' | translate }}</span></h1>
+      <h1 class="page-title"><i data-lucide="clock-7"></i> {{ 'ATTENDANCE.TITLE' | translate }}</h1>
 
       <!-- Check In / Out Box -->
       <div class="checkin-box">

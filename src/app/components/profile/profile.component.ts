@@ -84,7 +84,7 @@ import { Subscription } from 'rxjs';
   `],
   template: `
     <div class="page-wrapper" *ngIf="emp">
-      <h1 class="page-title"><i data-lucide="user"></i> {{ 'PROFILE.TITLE' | translate | slice:0:-8 }} <span>{{ 'PROFILE.PROFILE_SPAN' | translate }}</span></h1>
+      <h1 class="page-title"><i data-lucide="user"></i> {{ 'PROFILE.TITLE' | translate }}</h1>
 
       <!-- Header -->
       <div class="profile-header">

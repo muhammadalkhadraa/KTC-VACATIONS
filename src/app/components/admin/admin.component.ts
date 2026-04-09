@@ -69,7 +69,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
   `],
   template: `
     <div class="page-wrapper">
-      <h1 class="page-title"><i data-lucide="settings"></i> {{ 'ADMIN.TITLE' | translate | slice:0:-8 }} <span>{{ 'ADMIN.SPAN' | translate }}</span></h1>
+      <h1 class="page-title"><i data-lucide="settings"></i> {{ 'ADMIN.TITLE' | translate }}</h1>
 
       <!-- Role Badge -->
       <div class="role-badge-top" [ngClass]="{
