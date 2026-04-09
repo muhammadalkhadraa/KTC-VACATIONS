@@ -120,7 +120,8 @@ export class AuthService {
         .eq('id', empId)
         .single()
     ).pipe(
-      map(({ data }) => {
+      map(({ data, error }) => {
+        if (error || !data) throw error || new Error('Employee not found');
         const user = data as any;
         return {
           id: user.id,
@@ -128,8 +129,8 @@ export class AuthService {
           department: user.department,
           position: user.position,
           joined: user.joined,
-          totalHolidays: user.totalHolidays,
-          usedHolidays: user.usedHolidays,
+          totalHolidays: user.totalHolidays ?? user.total_holidays ?? 21,
+          usedHolidays: user.usedHolidays ?? user.used_holidays ?? 0,
           password: '',
           role: user.role
         } as Employee;
@@ -144,7 +145,18 @@ export class AuthService {
         .from('employees')
         .select(this.SELECT_ALL)
     ).pipe(
-      map(({ data }) => (data || []) as unknown as Employee[])
+      map(({ data }) => {
+        return (data || []).map((user: any) => ({
+          id: user.id,
+          name: user.name,
+          department: user.department,
+          position: user.position,
+          joined: user.joined,
+          totalHolidays: user.totalHolidays ?? user.total_holidays ?? 21,
+          usedHolidays: user.usedHolidays ?? user.used_holidays ?? 0,
+          role: user.role
+        } as Employee));
+      })
     );
   }
 

@@ -14,7 +14,9 @@
     "CANCEL": "Cancel",
     "SUBMIT": "Submit",
     "STATUS": "Status",
-    "DATE": "Date"
+    "DATE": "Date",
+    "LOADING": "Loading...",
+    "PLEASE_WAIT": "Please wait while we fetch your information."
   },
   "LOGIN": {
     "TITLE": "KTC",
@@ -163,6 +165,7 @@
     "NO_ROLES": "No roles defined yet",
     "COL_ACTIONS": "Actions",
     "USERS_TITLE": "👥 User Directory",
+    "COL_POSITION": "Position",
     "COL_USED": "Holidays Used",
     "BTN_ADMIN_ON": "Admin ✅",
     "BTN_ADMIN_OFF": "Make Admin",

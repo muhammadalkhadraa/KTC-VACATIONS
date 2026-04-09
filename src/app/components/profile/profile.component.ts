@@ -118,7 +118,7 @@ import { Subscription } from 'rxjs';
                 <div class="info-val">{{ emp.department }}</div>
               </div>
               <div class="info-item">
-                <div class="info-lbl"><i data-lucide="award" style="width: 12px;"></i>Position</div>
+                <div class="info-lbl"><i data-lucide="award" style="width: 12px;"></i>{{ 'ADMIN.COL_POSITION' | translate }}</div>
                 <div class="info-val">{{ emp.position }}</div>
               </div>
               <div class="info-item">
@@ -198,6 +198,15 @@ import { Subscription } from 'rxjs';
         </div>
       </div>
     </div>
+
+    <ng-template #loading>
+      <div class="page-wrapper" style="display:flex; align-items:center; justify-content:center; min-height:400px;">
+        <div style="text-align:center;">
+          <h2 style="color:var(--text-muted); font-family:'Outfit';">{{ 'COMMON.LOADING' | translate: {defaultValue: 'Loading Profile...'} }}</h2>
+          <p style="color:var(--text-dim); margin-top:10px;">{{ 'COMMON.PLEASE_WAIT' | translate: {defaultValue: 'Please wait while we fetch your information.'} }}</p>
+        </div>
+      </div>
+    </ng-template>
   `
 })
 export class ProfileComponent implements OnInit, OnDestroy {
@@ -227,10 +236,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
   get barWidth() { return Math.round((this.remaining / this.emp.totalHolidays) * 100) + '%'; }
 
   ngOnInit(): void {
-    const id = this.auth.currentUser!.id;
-    this.auth.getEmployeeById(id).subscribe(emp => {
-      this.emp = emp;
+    const user = this.auth.currentUser;
+    if (!user) return;
+
+    const id = user.id;
+    this.auth.getEmployeeById(id).subscribe({
+      next: emp => {
+        this.emp = emp;
+        this.refreshIcons();
+      },
+      error: () => {
+        // Handle error if needed
+      }
     });
+
     this.holSvc.getForEmployee(id).subscribe(reqs => {
       this.requests = reqs;
     });
