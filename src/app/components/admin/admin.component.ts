@@ -253,7 +253,7 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                 <th>{{ 'PROFILE.ROLE' | translate }}</th>
                 <th>{{ 'ADMIN.COL_USED' | translate }}</th>
                 <th>{{ 'PROFILE.REMAINING' | translate }}</th>
-                <th></th>
+                <th>{{ 'ADMIN.COL_ACTIONS' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -279,7 +279,8 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
                 <td><strong style="color:var(--primary); font-family:'Outfit'; font-size:1.1rem;">{{ e.totalHolidays - e.usedHolidays }}</strong></td>
                 <td>
                   <button class="action-btn btn-reject" (click)="deleteUser(e)" [title]="'ADMIN.BTN_DELETE_USER' | translate">
-                    <i data-lucide="trash-2" style="width:16px; height:16px;"></i>
+                    <i data-lucide="trash-2" style="width:14px; height:14px;"></i>
+                    <span>{{ 'ADMIN.BTN_DELETE' | translate }}</span>
                   </button>
                 </td>
               </tr>

@@ -159,6 +159,7 @@
     "BTN_ADD_ROLE": "إضافة دور",
     "BTN_DELETE": "حذف",
     "NO_ROLES": "لا توجد أدوار محددة بعد",
+    "COL_ACTIONS": "الإجراءات",
     "USERS_TITLE": "👥 دليل المستخدمين",
     "COL_USED": "الإجازات المستخدمة",
     "BTN_ADMIN_ON": "مسؤول ✅",
