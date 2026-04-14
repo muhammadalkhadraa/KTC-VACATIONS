@@ -27,6 +27,7 @@ export interface AttendanceRecord {
   status: 'Present' | 'Absent' | 'Late' | 'Weekend' | 'Early';
   checkIn: string;      // 'HH:MM' or '—'
   checkOut: string;     // 'HH:MM' or '—'
+  overtime?: string;
   checkInTime?:  string | null;
   checkOutTime?: string | null;
 }
