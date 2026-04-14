@@ -7,7 +7,7 @@ import { AttendanceRecord, CheckInStatus } from '../models/models';
 export class AttendanceService {
   constructor(private supabaseSvc: SupabaseService) { }
 
-  private readonly SELECT_ALL = 'id, emp_id:empId, state, check_in_time:checkInTime, check_out_time:checkOutTime';
+  private readonly SELECT_ALL = 'id, empId:emp_id, state, checkInTime:check_in_time, checkOutTime:check_out_time';
 
   getHistory(empId: string): Observable<CheckInStatus[]> {
     const id = empId.trim().toUpperCase();
@@ -18,7 +18,10 @@ export class AttendanceService {
         .eq('emp_id', id)
         .order('check_in_time', { ascending: false })
     ).pipe(
-      map(({ data }) => (data as unknown as CheckInStatus[]) || [])
+      map((res: any) => {
+        if (res.error) throw res.error;
+        return (res.data as unknown as CheckInStatus[]) || [];
+      })
     );
   }
 
@@ -32,14 +35,15 @@ export class AttendanceService {
         .gte('check_in_time', `${today}T00:00:00`)
         .lte('check_in_time', `${today}T23:59:59`)
     ).pipe(
-      map(({ data }) => (data as unknown as CheckInStatus[]) || [])
+      map((res: any) => {
+        if (res.error) throw res.error;
+        return (res.data as unknown as CheckInStatus[]) || [];
+      })
     );
   }
 
   /**
    * Record a new state (in or out).
-   * For checkout, pass the existing status WITH its id so upsert updates
-   * the existing row instead of inserting a new orphan row.
    */
   postStatus(status: Partial<CheckInStatus>): Observable<CheckInStatus> {
     const record: Record<string, any> = {
@@ -58,7 +62,10 @@ export class AttendanceService {
     return from(
       this.supabaseSvc.supabase.from('check_ins').upsert([record]).select(this.SELECT_ALL).single()
     ).pipe(
-      map(({ data }) => data as unknown as CheckInStatus)
+      map((res: any) => {
+        if (res.error) throw res.error;
+        return res.data as unknown as CheckInStatus;
+      })
     );
   }
 
