@@ -130,7 +130,7 @@ namespace KtcBackend.Migrations
                         .HasColumnType("text")
                         .HasColumnName("emp_name");
 
-                    b.Property<DateTime>("EndDate")
+                    b.Property<DateTime>("endDate")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("end_date");
 

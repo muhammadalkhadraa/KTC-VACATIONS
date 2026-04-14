@@ -24,7 +24,7 @@ export interface RegisterRequest {
 
 export interface AttendanceRecord {
   date: string;         // 'YYYY-MM-DD'
-  status: 'Present' | 'Absent' | 'Late' | 'Weekend';
+  status: 'Present' | 'Absent' | 'Late' | 'Weekend' | 'Early';
   checkIn: string;      // 'HH:MM' or '—'
   checkOut: string;     // 'HH:MM' or '—'
 }

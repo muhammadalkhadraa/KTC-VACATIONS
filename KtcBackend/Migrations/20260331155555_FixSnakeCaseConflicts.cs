@@ -346,7 +346,7 @@ namespace KtcBackend.Migrations
             migrationBuilder.RenameColumn(
                 name: "end_date",
                 table: "HolidayRequests",
-                newName: "EndDate");
+                newName: "end_date");
 
             migrationBuilder.RenameColumn(
                 name: "emp_name",

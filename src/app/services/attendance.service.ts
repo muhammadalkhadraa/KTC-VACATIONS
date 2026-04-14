@@ -22,9 +22,7 @@ export class AttendanceService {
     );
   }
 
-  /**
-   * All check‑in rows recorded today (UTC).
-   */
+  /** All check-in rows recorded today. */
   getToday(): Observable<CheckInStatus[]> {
     const today = new Date().toISOString().split('T')[0];
     return from(
@@ -40,14 +38,23 @@ export class AttendanceService {
 
   /**
    * Record a new state (in or out).
+   * For checkout, pass the existing status WITH its id so upsert updates
+   * the existing row instead of inserting a new orphan row.
    */
   postStatus(status: Partial<CheckInStatus>): Observable<CheckInStatus> {
-    const record = {
+    const record: Record<string, any> = {
       emp_id: status.empId?.trim().toUpperCase(),
-      state: status.state,
-      check_in_time: status.state === 'in' ? new Date().toISOString() : status.checkInTime,
-      check_out_time: status.state === 'out' ? new Date().toISOString() : status.checkOutTime
+      state:  status.state,
     };
+
+    if (status.state === 'in') {
+      record['check_in_time'] = new Date().toISOString();
+    } else if (status.state === 'out') {
+      record['check_in_time']  = status.checkInTime ?? null;
+      record['check_out_time'] = new Date().toISOString();
+      if (status.id) record['id'] = status.id; // update existing row
+    }
+
     return from(
       this.supabaseSvc.supabase.from('check_ins').upsert([record]).select(this.SELECT_ALL).single()
     ).pipe(
@@ -55,21 +62,51 @@ export class AttendanceService {
     );
   }
 
-  // convenience helpers
+  // ── Helpers ──────────────────────────────────────────────────────────
+
+  /**
+   * Convert a raw DB row into a display-ready AttendanceRecord.
+   * Arrival status relative to 8:00 AM (local time):
+   *   before 08:00            → Early
+   *   08:00 – 08:10 (grace)   → Present (On Time)
+   *   after  08:10            → Late
+   */
   toRecord(status: CheckInStatus): AttendanceRecord {
-    return {
-      date: status.checkInTime ? status.checkInTime.slice(0, 10) : '',
-      status: status.state === 'in' ? 'Present' : status.state === 'out' ? 'Present' : 'Absent',
-      checkIn: status.checkInTime ? status.checkInTime.slice(11, 16) : '—',
-      checkOut: status.checkOutTime ? status.checkOutTime.slice(11, 16) : '—'
-    };
+    const { checkInTime, checkOutTime } = status;
+    let recordStatus: AttendanceRecord['status'] = 'Absent';
+    let dateStr     = '';
+    let checkInStr  = '—';
+    let checkOutStr = '—';
+
+    if (checkInTime) {
+      const d    = new Date(checkInTime);
+      const mins = d.getHours() * 60 + d.getMinutes(); // local clock
+
+      if      (mins < 8 * 60)       recordStatus = 'Early';
+      else if (mins <= 8 * 60 + 10) recordStatus = 'Present';
+      else                          recordStatus = 'Late';
+
+      // Local YYYY-MM-DD
+      const y  = d.getFullYear();
+      const mo = String(d.getMonth() + 1).padStart(2, '0');
+      const dy = String(d.getDate()).padStart(2, '0');
+      dateStr  = `${y}-${mo}-${dy}`;
+      checkInStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    if (checkOutTime) {
+      checkOutStr = new Date(checkOutTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    return { date: dateStr, status: recordStatus, checkIn: checkInStr, checkOut: checkOutStr };
   }
 
   getSummary(records: AttendanceRecord[]) {
     return {
       present: records.filter(r => r.status === 'Present').length,
-      absent: records.filter(r => r.status === 'Absent').length,
-      late: records.filter(r => r.status === 'Late').length,
+      absent:  records.filter(r => r.status === 'Absent').length,
+      late:    records.filter(r => r.status === 'Late').length,
+      early:   records.filter(r => r.status === 'Early').length,
     };
   }
 }

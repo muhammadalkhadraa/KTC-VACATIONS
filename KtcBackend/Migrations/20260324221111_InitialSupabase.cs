@@ -56,7 +56,7 @@ namespace KtcBackend.Migrations
                     EmpId = table.Column<string>(type: "text", nullable: false),
                     EmpName = table.Column<string>(type: "text", nullable: false),
                     StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    end_date = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     Days = table.Column<int>(type: "integer", nullable: false),
                     Reason = table.Column<string>(type: "text", nullable: true),
                     ManagerId = table.Column<string>(type: "text", nullable: false),

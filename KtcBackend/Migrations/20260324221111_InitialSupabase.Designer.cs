@@ -110,7 +110,7 @@ namespace KtcBackend.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("EndDate")
+                    b.Property<DateTime>("End_date")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("GMId")
