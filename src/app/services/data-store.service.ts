@@ -45,7 +45,8 @@ export class DataStoreService {
       catchError(() => of([]))
     ).subscribe(res => {
       const records = res.map(s => this.attSvc.toRecord(s));
-      this.attendanceHistory.set(records);
+      const fullHistory = this.attSvc.fillMissingDays(records, this.user()?.joined);
+      this.attendanceHistory.set(fullHistory);
       this.isLoading.set(false);
     });
   }

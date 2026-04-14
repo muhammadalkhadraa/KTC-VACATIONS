@@ -470,7 +470,8 @@ export class AttendanceComponent implements OnInit, OnDestroy, AfterViewInit {
   private loadHistory(empId: string): void {
     this.attSvc.getHistory(empId).subscribe(statuses => {
       statuses.sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
-      this.records = statuses.map(s => this.attSvc.toRecord(s));
+      const fetchedRecords = statuses.map(s => this.attSvc.toRecord(s));
+      this.records = this.attSvc.fillMissingDays(fetchedRecords, this.auth.currentUser?.joined);
 
       const today = (() => {
         const d = new Date();

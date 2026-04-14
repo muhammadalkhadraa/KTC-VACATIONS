@@ -128,4 +128,55 @@ export class AttendanceService {
       early:   records.filter(r => r.status === 'Early').length,
     };
   }
+
+  fillMissingDays(dbRecords: AttendanceRecord[], joined?: string): AttendanceRecord[] {
+    const recordsMap = new Map<string, AttendanceRecord>();
+    dbRecords.forEach(r => recordsMap.set(r.date, r));
+
+    let start = new Date();
+    start.setDate(start.getDate() - 30); // fallback 30 days
+    if (joined) {
+      const jDate = new Date(joined + 'T00:00:00');
+      if (!isNaN(jDate.getTime())) start = jDate;
+    }
+
+    // Ensure we don't start later than the oldest recorded date
+    if (dbRecords.length > 0) {
+      const oldestRec = new Date(dbRecords[dbRecords.length - 1].date + 'T00:00:00');
+      if (oldestRec < start) start = oldestRec;
+    }
+
+    const today = new Date();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+    const todayMins = today.getHours() * 60 + today.getMinutes();
+
+    const arr: AttendanceRecord[] = [];
+
+    // Loop from start date up to today
+    for (let d = new Date(start); d <= today; d.setDate(d.getDate() + 1)) {
+      const dStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      
+      if (recordsMap.has(dStr)) {
+        arr.push(recordsMap.get(dStr)!);
+      } else {
+        const dayOfWeek = d.getDay();
+        // Assume Friday (5) and Saturday (6) are weekends
+        if (dayOfWeek === 5 || dayOfWeek === 6) {
+          arr.push({ date: dStr, status: 'Weekend', checkIn: '—', checkOut: '—', overtime: '—' });
+        } else {
+          // Weekday missing record
+          if (dStr < todayStr) {
+            arr.push({ date: dStr, status: 'Absent', checkIn: '—', checkOut: '—', overtime: '—' });
+          } else if (dStr === todayStr && todayMins >= (17 * 60 + 30)) {
+            // Cutoff is 5:30 PM (1050 minutes)
+            arr.push({ date: dStr, status: 'Absent', checkIn: '—', checkOut: '—', overtime: '—' });
+          }
+        }
+      }
+    }
+
+    // Ensure it's sorted descending by date for the UI
+    arr.sort((a, b) => b.date.localeCompare(a.date));
+    return arr;
+  }
 }
