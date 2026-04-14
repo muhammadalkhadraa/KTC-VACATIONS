@@ -329,6 +329,7 @@ import { Subscription } from 'rxjs';
                 <th>{{ 'DASHBOARD.COL_STATUS' | translate }}</th>
                 <th>{{ 'DASHBOARD.COL_IN' | translate }}</th>
                 <th>{{ 'DASHBOARD.COL_OUT' | translate }}</th>
+                <th>{{ 'ATTENDANCE.COL_OVERTIME' | translate }}</th>
               </tr>
             </thead>
             <tbody>
@@ -338,6 +339,9 @@ import { Subscription } from 'rxjs';
                 <td><span class="badge" [ngClass]="badgeClass(r.status)">{{ getStatusLabel(r.status) }}</span></td>
                 <td style="font-family:'Outfit';font-weight:600">{{ r.checkIn }}</td>
                 <td style="font-family:'Outfit';font-weight:600">{{ r.checkOut }}</td>
+                <td style="font-family:'Outfit';font-weight:600" [style.color]="r.overtime !== '—' ? 'var(--primary)' : 'var(--text-muted)'">
+                  {{ r.overtime }}
+                </td>
               </tr>
             </tbody>
           </table>

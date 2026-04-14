@@ -101,11 +101,23 @@ export class AttendanceService {
       checkInStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
     }
 
+    let overtimeStr = '—';
+
     if (checkOutTime) {
-      checkOutStr = new Date(checkOutTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+      const outD = new Date(checkOutTime);
+      checkOutStr = outD.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+
+      const outMins = outD.getHours() * 60 + outD.getMinutes();
+      // Work ends at 17:30 (1050 mins). Grace period is until 17:45 (1065 mins).
+      if (outMins >= (17 * 60 + 45)) {
+        const overtimeMins = outMins - (17 * 60 + 30); // count time sitting past 17:30
+        const h = Math.floor(overtimeMins / 60);
+        const m = overtimeMins % 60;
+        overtimeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
+      }
     }
 
-    return { date: dateStr, status: recordStatus, checkIn: checkInStr, checkOut: checkOutStr };
+    return { date: dateStr, status: recordStatus, checkIn: checkInStr, checkOut: checkOutStr, overtime: overtimeStr };
   }
 
   getSummary(records: AttendanceRecord[]) {

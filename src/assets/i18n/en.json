@@ -100,6 +100,7 @@
     "SUCCESS_OUT": "👋 Checked out. See you tomorrow!",
     "NO_RECORDS": "No records found for this month.",
     "COL_DAY": "Day",
+    "COL_OVERTIME": "Overtime",
     "DAYS": {
       "SUN": "Sun", "MON": "Mon", "TUE": "Tue", "WED": "Wed", "THU": "Thu", "FRI": "Fri", "SAT": "Sat"
     }
