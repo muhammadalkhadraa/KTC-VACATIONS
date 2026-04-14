@@ -328,7 +328,27 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   get myRequests() { return this.store.myRequests(); }
   get recentAtt() { return this.store.attendanceHistory().slice().reverse().slice(0, 5); }
-  get summary() { return this.attSvc.getSummary(this.store.attendanceHistory()); }
+  get summary() { 
+    const d = new Date();
+    let startD = new Date(d);
+    let endD = new Date(d);
+    
+    if (d.getDate() <= 25) {
+      startD.setMonth(d.getMonth() - 1);
+      startD.setDate(26);
+      endD.setDate(25);
+    } else {
+      startD.setDate(26);
+      endD.setMonth(d.getMonth() + 1);
+      endD.setDate(25);
+    }
+
+    const fromDate = `${startD.getFullYear()}-${String(startD.getMonth() + 1).padStart(2, '0')}-${String(startD.getDate()).padStart(2, '0')}`;
+    const toDate = `${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, '0')}-${String(endD.getDate()).padStart(2, '0')}`;
+
+    const cycleRecords = this.store.attendanceHistory().filter(r => r.date >= fromDate && r.date <= toDate);
+    return this.attSvc.getSummary(cycleRecords); 
+  }
   get remainingHolidays() {
     const u = this.store.user();
     return u ? u.totalHolidays - u.usedHolidays : 0;
