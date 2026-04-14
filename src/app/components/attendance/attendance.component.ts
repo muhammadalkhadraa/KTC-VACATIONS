@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
@@ -375,7 +375,8 @@ export class AttendanceComponent implements OnInit, OnDestroy, AfterViewInit {
     private auth: AuthService,
     private attSvc: AttendanceService,
     private toast: ToastService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -513,6 +514,7 @@ export class AttendanceComponent implements OnInit, OnDestroy, AfterViewInit {
       }
 
       setTimeout(() => this.refreshIcons(), 150);
+      this.cdr.detectChanges();
     });
   }
 
