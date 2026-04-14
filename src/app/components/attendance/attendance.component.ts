@@ -472,30 +472,39 @@ export class AttendanceComponent implements OnInit, OnDestroy, AfterViewInit {
       statuses.sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
       this.records = statuses.map(s => this.attSvc.toRecord(s));
 
-      // Find today's record (local date)
       const today = (() => {
         const d = new Date();
         return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
       })();
 
-      const todayRow = statuses.find(s => {
-        if (!s.checkInTime) return false;
-        const d  = new Date(s.checkInTime);
-        const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-        return ds === today;
-      });
+      const latestRow = statuses[0];
+      let activeRow: CheckInStatus | undefined;
 
-      if (todayRow) {
-        this.status = todayRow;
-        if (todayRow.checkInTime) {
-          const d = new Date(todayRow.checkInTime);
-          this.frozenTime           = this.frozenTimeFrom(todayRow.checkInTime);
+      if (latestRow) {
+        if (latestRow.state === 'in') {
+          // If the most recent action was a check-in (even from a past day), they must check out!
+          activeRow = latestRow;
+        } else if (latestRow.state === 'out' && latestRow.checkInTime) {
+          // If they are checked out, see if this checkout happened TODAY.
+          const d = new Date(latestRow.checkInTime);
+          const ds = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+          if (ds === today) {
+            activeRow = latestRow; // Done for today
+          }
+        }
+      }
+
+      if (activeRow) {
+        this.status = activeRow;
+        if (activeRow.checkInTime) {
+          const d = new Date(activeRow.checkInTime);
+          this.frozenTime           = this.frozenTimeFrom(activeRow.checkInTime);
           this.clockFrozen          = true;
           this.checkInArrivalStatus = this.computeArrival(d);
           this.todayCheckIn         = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         }
-        if (todayRow.checkOutTime) {
-          this.todayCheckOut = new Date(todayRow.checkOutTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        if (activeRow.checkOutTime) {
+          this.todayCheckOut = new Date(activeRow.checkOutTime).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         }
       } else {
         this.status               = { empId, state: 'none', checkInTime: '', checkOutTime: '' };
