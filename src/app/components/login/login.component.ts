@@ -34,11 +34,16 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
       border: 1px solid var(--glass-border);
       border-radius: 32px;
       padding: 64px 48px;
-      width: 480px;
+      width: 100%;
+      max-width: 480px;
       box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
       text-align: center;
       z-index: 10;
       animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @media (max-width: 768px) {
+      .card { padding: 48px 24px; }
+      .logo { font-size: 2.8rem; }
     }
     .logo {
       font-family: 'Outfit', sans-serif;

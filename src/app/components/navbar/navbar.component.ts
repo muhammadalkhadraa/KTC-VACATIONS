@@ -189,8 +189,43 @@ import { LanguageService } from '../../services/language.service';
       nav { width: 80px; padding: 32px 12px; }
       .brand-area, .nav-link span, .user-info, .btn-logout span { display: none; }
       .logo { margin-bottom: 40px; justify-content: center; }
-      .nav-link { justify-content: center; padding: 16px; }
+      .nav-link { justify-content: center; padding: 16px; margin-bottom: 15px;}
       .user-profile { justify-content: center; padding: 12px 0; }
+    }
+    
+    @media (max-width: 768px) {
+      nav { 
+        width: 100%; 
+        height: 75px; 
+        flex-direction: row; 
+        top: auto; 
+        bottom: 0; 
+        padding: 0; 
+        border-right: none; 
+        border-top: 1px solid var(--glass-border); 
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+      }
+      .user-area { display: none; }
+      .links { 
+        flex-direction: row; 
+        margin: 0; 
+        padding: 0 10px; 
+        align-items: center; 
+        justify-content: space-around; 
+        width: 100%;
+        gap: 0;
+      }
+      .nav-link { 
+        padding: 10px; 
+        margin-bottom: 0;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        border-radius: 12px;
+      }
+      .nav-link.active::before { display: none; }
+      [dir="rtl"] nav { border-left: none; border-top: 1px solid var(--glass-border); }
+      [dir="rtl"] .nav-link.active::before { display: none; }
     }
   `],
   template: `

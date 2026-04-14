@@ -81,6 +81,25 @@ body {
   flex: 1;
   padding-left: var(--sidebar-width);
   transition: padding 0.3s ease;
+  width: 100vw; /* ensure it doesn't overflow grid */
+}
+
+@media (max-width: 1024px) {
+  .main-content {
+    padding-left: 80px;
+  }
+  [dir="rtl"] .main-content {
+    padding-left: 0;
+    padding-right: 80px;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 75px; 
+  }
 }
 
 /* ── Typography ── */
@@ -262,6 +281,7 @@ th {
   padding: 20px;
   text-align: left;
   border-bottom: 1px solid var(--glass-border);
+  white-space: nowrap;
 }
 
 td {
@@ -270,6 +290,7 @@ td {
   border-bottom: 1px solid var(--glass-border);
   color: var(--text-main);
   transition: background 0.2s;
+  white-space: nowrap;
 }
 
 tr:last-child td { border: none; }
@@ -348,11 +369,17 @@ tr:hover td {
 }
 
 /* ── Responsive ── */
+@media (max-width: 1024px) {
+  .page-wrapper { padding: 32px 24px; }
+}
+
 @media (max-width: 768px) {
   .page-wrapper { padding: 24px 16px; }
-  .page-title { font-size: 1.75rem; }
-  .card { padding: 24px; }
+  .page-title { font-size: 1.5rem; flex-direction: column; align-items: flex-start; gap: 8px; }
+  .card { padding: 20px; }
   .stats-grid { gap: 16px; }
+  .btn-primary, .btn-secondary { width: 100%; justify-content: center; }
+  th, td { padding: 12px; }
 }
 
 /* ── RTL Support Overrides ── */
