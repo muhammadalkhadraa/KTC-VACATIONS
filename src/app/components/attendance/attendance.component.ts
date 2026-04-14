@@ -280,24 +280,17 @@ import { Subscription } from 'rxjs';
         </div>
       </div>
 
-      <!-- ══════════ MONTH NAVIGATOR ══════════ -->
+      <!-- ══════════ DATE RANGE FILTER ══════════ -->
       <div class="month-nav">
-        <div class="month-nav-top">
-          <span class="nav-label">
-            <i data-lucide="calendar" style="width:13px;height:13px"></i>
-            {{ 'ATTENDANCE.MONTH_SELECT' | translate }}
-          </span>
-          <select class="year-select" [(ngModel)]="selectedYear">
-            <option *ngFor="let y of yearOptions" [value]="y">{{ y }}</option>
-          </select>
-        </div>
-        <div class="month-pills">
-          <button *ngFor="let m of monthOptions; let i = index"
-                  class="m-pill"
-                  [class.active]="selectedMonth === i"
-                  (click)="selectedMonth = i">
-            {{ m }}
-          </button>
+        <div class="month-nav-top" style="gap: 20px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="nav-label"><i data-lucide="calendar-search" style="width:13px;height:13px"></i>{{ 'ATTENDANCE.FILTER_FROM' | translate }}</span>
+            <input type="date" class="year-select" [(ngModel)]="fromDate">
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span class="nav-label"><i data-lucide="calendar-search" style="width:13px;height:13px"></i>{{ 'ATTENDANCE.FILTER_TO' | translate }}</span>
+            <input type="date" class="year-select" [(ngModel)]="toDate">
+          </div>
         </div>
       </div>
 
@@ -318,7 +311,7 @@ import { Subscription } from 'rxjs';
       <div class="card">
         <div class="card-title">
           <i data-lucide="history"></i>
-          {{ 'ATTENDANCE.HISTORY_MONTH' | translate:{month: selectedMonthLabel, year: selectedYear} }}
+          {{ 'ATTENDANCE.HISTORY_RANGE' | translate:{from: formatDate(fromDate), to: formatDate(toDate)} }}
         </div>
         <div class="table-container">
           <table *ngIf="filtered.length > 0">
@@ -371,11 +364,9 @@ export class AttendanceComponent implements OnInit, OnDestroy, AfterViewInit {
   todayCheckIn  = '—';
   todayCheckOut = '—';
 
-  // Month/year selector
-  selectedMonth: number = new Date().getMonth();
-  selectedYear:  number = new Date().getFullYear();
-  monthOptions: string[] = [];
-  yearOptions:  number[] = [];
+  // Date range selector
+  fromDate = '';
+  toDate = '';
 
   private timer?: ReturnType<typeof setInterval>;
   private sub = new Subscription();
@@ -392,12 +383,11 @@ export class AttendanceComponent implements OnInit, OnDestroy, AfterViewInit {
     this.loadHistory(id);
     this.tick();
     this.timer = setInterval(() => this.tick(), 1000);
-    this.buildMonthYearOptions();
+    this.initDateRange();
 
     this.sub.add(
       this.translate.onLangChange.subscribe(() => {
         this.tick();
-        this.buildMonthYearOptions();
       })
     );
   }
@@ -417,20 +407,28 @@ export class AttendanceComponent implements OnInit, OnDestroy, AfterViewInit {
     this.dateLabel = new Date().toLocaleDateString(locale, { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
   }
 
-  buildMonthYearOptions(): void {
-    const locale = this.translate.currentLang === 'ar' ? 'ar-EG' : 'en-US';
-    this.monthOptions = Array.from({ length: 12 }, (_, i) =>
-      new Date(2000, i, 1).toLocaleDateString(locale, { month: 'long' })
-    );
-    const cur = new Date().getFullYear();
-    this.yearOptions = [cur, cur - 1, cur - 2];
+  initDateRange(): void {
+    const d = new Date();
+    let startD = new Date(d);
+    let endD = new Date(d);
+    
+    if (d.getDate() <= 25) {
+      startD.setMonth(d.getMonth() - 1);
+      startD.setDate(26);
+      endD.setDate(25);
+    } else {
+      startD.setDate(26);
+      endD.setMonth(d.getMonth() + 1);
+      endD.setDate(25);
+    }
+
+    this.fromDate = `${startD.getFullYear()}-${String(startD.getMonth() + 1).padStart(2, '0')}-${String(startD.getDate()).padStart(2, '0')}`;
+    this.toDate = `${endD.getFullYear()}-${String(endD.getMonth() + 1).padStart(2, '0')}-${String(endD.getDate()).padStart(2, '0')}`;
   }
 
   // ── Computed ────────────────────────────────────────────────
 
   get displayTime(): string { return this.clockFrozen ? this.frozenTime : this.liveTime; }
-
-  get selectedMonthLabel(): string { return this.monthOptions[this.selectedMonth] ?? ''; }
 
   get arrivalStatusLabel(): string {
     if (this.checkInArrivalStatus === 'Early')   return this.translate.instant('ATTENDANCE.STATUS_EARLY');
@@ -442,8 +440,7 @@ export class AttendanceComponent implements OnInit, OnDestroy, AfterViewInit {
   get monthRecords(): AttendanceRecord[] {
     return this.records.filter(r => {
       if (!r.date) return false;
-      const d = new Date(r.date + 'T00:00:00');
-      return d.getMonth() === this.selectedMonth && d.getFullYear() === +this.selectedYear;
+      return r.date >= this.fromDate && r.date <= this.toDate;
     });
   }
 
