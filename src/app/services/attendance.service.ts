@@ -122,7 +122,7 @@ export class AttendanceService {
 
   getSummary(records: AttendanceRecord[]) {
     return {
-      present: records.filter(r => r.status === 'Present').length,
+      present: records.filter(r => r.status === 'Present' || r.status === 'Early' || r.status === 'Late').length,
       absent:  records.filter(r => r.status === 'Absent').length,
       late:    records.filter(r => r.status === 'Late').length,
       early:   records.filter(r => r.status === 'Early').length,
