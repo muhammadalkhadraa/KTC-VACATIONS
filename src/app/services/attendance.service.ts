@@ -1,13 +1,27 @@
 import { Injectable } from '@angular/core';
-import { from, map, Observable } from 'rxjs';
+import { from, map, Observable, shareReplay } from 'rxjs';
 import { SupabaseService } from './supabase.service';
-import { AttendanceRecord, CheckInStatus } from '../models/models';
+import { AttendanceRecord, CheckInStatus, WorkingHoursRule } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
   constructor(private supabaseSvc: SupabaseService) { }
 
   private readonly SELECT_ALL = 'id, empId:emp_id, state, checkInTime:check_in_time, checkOutTime:check_out_time';
+
+  private rulesCache$: Observable<WorkingHoursRule[]> | null = null;
+
+  getWorkingHours(forceRefresh = false): Observable<WorkingHoursRule[]> {
+    if (!this.rulesCache$ || forceRefresh) {
+      this.rulesCache$ = from(
+        this.supabaseSvc.supabase.from('working_hours').select('*').order('start_date', { ascending: false })
+      ).pipe(
+        map((res: any) => res.data as WorkingHoursRule[] || []),
+        shareReplay(1)
+      );
+    }
+    return this.rulesCache$;
+  }
 
   getHistory(empId: string): Observable<CheckInStatus[]> {
     const id = empId.trim().toUpperCase();
@@ -78,39 +92,55 @@ export class AttendanceService {
    *   08:00 – 08:10 (grace)   → Present (On Time)
    *   after  08:10            → Late
    */
-  toRecord(status: CheckInStatus): AttendanceRecord {
+  toRecord(status: CheckInStatus, rules: WorkingHoursRule[] = []): AttendanceRecord {
     const { checkInTime, checkOutTime } = status;
     let recordStatus: AttendanceRecord['status'] = 'Absent';
     let dateStr     = '';
     let checkInStr  = '—';
     let checkOutStr = '—';
+    let overtimeStr = '—';
+
+    // Figure out the default check-in and check-out boundary
+    let targetInTime = 8 * 60; // 08:00 AM
+    let targetOutTime = 17 * 60 + 30; // 17:30 PM
 
     if (checkInTime) {
       const d    = new Date(checkInTime);
-      const mins = d.getHours() * 60 + d.getMinutes(); // local clock
-
-      if      (mins < 8 * 60)       recordStatus = 'Early';
-      else if (mins <= 8 * 60 + 10) recordStatus = 'Present';
-      else                          recordStatus = 'Late';
-
-      // Local YYYY-MM-DD
       const y  = d.getFullYear();
       const mo = String(d.getMonth() + 1).padStart(2, '0');
       const dy = String(d.getDate()).padStart(2, '0');
       dateStr  = `${y}-${mo}-${dy}`;
       checkInStr = d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    }
+      
+      const applicableRule = this.getRuleForDate(d, rules);
+      if (applicableRule) {
+         const [inH, inM] = applicableRule.check_in_time.split(':').map(Number);
+         targetInTime = inH * 60 + inM;
+         const [outH, outM] = applicableRule.check_out_time.split(':').map(Number);
+         targetOutTime = outH * 60 + outM;
+      }
 
-    let overtimeStr = '—';
+      const mins = d.getHours() * 60 + d.getMinutes(); // local clock
+      if      (mins < targetInTime)       recordStatus = 'Early';
+      else if (mins <= targetInTime + 10) recordStatus = 'Present'; // Grace period 10 minutes
+      else                                recordStatus = 'Late';
+    }
 
     if (checkOutTime) {
       const outD = new Date(checkOutTime);
       checkOutStr = outD.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+      // Identify rule relative to checkout (in case of midnight crossover, rely on checkOut date)
+      const applicableRule = this.getRuleForDate(outD, rules);
+      if (applicableRule) {
+         const [outH, outM] = applicableRule.check_out_time.split(':').map(Number);
+         targetOutTime = outH * 60 + outM;
+      }
+
       const outMins = outD.getHours() * 60 + outD.getMinutes();
-      // Work ends at 17:30 (1050 mins). Grace period is until 17:45 (1065 mins).
-      if (outMins >= (17 * 60 + 45)) {
-        const overtimeMins = outMins - (17 * 60 + 30); // count time sitting past 17:30
+      // Overtime grace period 15 mins
+      if (outMins >= (targetOutTime + 15)) {
+        const overtimeMins = outMins - targetOutTime; 
         const h = Math.floor(overtimeMins / 60);
         const m = overtimeMins % 60;
         overtimeStr = h > 0 ? `${h}h ${m}m` : `${m}m`;
@@ -118,6 +148,22 @@ export class AttendanceService {
     }
 
     return { date: dateStr, status: recordStatus, checkIn: checkInStr, checkOut: checkOutStr, overtime: overtimeStr };
+  }
+
+  private getRuleForDate(d: Date, rules: WorkingHoursRule[]): WorkingHoursRule | undefined {
+    // Rules are chronologically sorted descending, loop till we capture the bounds
+    for (const r of rules) {
+       const start = new Date(r.start_date);
+       let end = new Date('2099-12-31');
+       if (r.end_date) end = new Date(r.end_date);
+       
+       const t = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+       const s = new Date(start.getFullYear(), start.getMonth(), start.getDate()).getTime();
+       const e = new Date(end.getFullYear(), end.getMonth(), end.getDate()).getTime();
+
+       if (t >= s && t <= e) return r;
+    }
+    return undefined;
   }
 
   getSummary(records: AttendanceRecord[]) {

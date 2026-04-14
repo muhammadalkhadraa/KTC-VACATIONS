@@ -6,7 +6,7 @@ import { AttendanceService } from '../../services/attendance.service';
 import { ToastService } from '../../services/toast.service';
 import { AttendanceRecord, CheckInStatus } from '../../models/models';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { Subscription } from 'rxjs';
+import { Subscription, combineLatest } from 'rxjs';
 
 @Component({
   selector: 'app-attendance',
@@ -466,9 +466,12 @@ export class AttendanceComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private loadHistory(empId: string): void {
-    this.attSvc.getHistory(empId).subscribe(statuses => {
+    combineLatest([
+      this.attSvc.getHistory(empId),
+      this.attSvc.getWorkingHours()
+    ]).subscribe(([statuses, rules]) => {
       statuses.sort((a, b) => (b.id ?? 0) - (a.id ?? 0));
-      const fetchedRecords = statuses.map(s => this.attSvc.toRecord(s));
+      const fetchedRecords = statuses.map(s => this.attSvc.toRecord(s, rules));
       this.records = this.attSvc.fillMissingDays(fetchedRecords, this.auth.currentUser?.joined);
 
       const today = (() => {

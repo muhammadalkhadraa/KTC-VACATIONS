@@ -27,7 +27,16 @@ export interface AttendanceRecord {
   status: 'Present' | 'Absent' | 'Late' | 'Weekend' | 'Early';
   checkIn: string;      // 'HH:MM' or '—'
   checkOut: string;     // 'HH:MM' or '—'
-  overtime?: string;    // 'Xh Ym' or '—'
+  checkInTime?:  string | null;
+  checkOutTime?: string | null;
+}
+
+export interface WorkingHoursRule {
+  id: number;
+  start_date: string;
+  end_date: string | null;
+  check_in_time: string;
+  check_out_time: string;
 }
 
 export interface HolidayRequest {

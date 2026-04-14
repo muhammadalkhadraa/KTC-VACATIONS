@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { HolidayService } from './holiday.service';
 import { AttendanceService } from './attendance.service';
 import { Employee, HolidayRequest, AttendanceRecord } from '../models/models';
-import { catchError, of } from 'rxjs';
+import { catchError, of, combineLatest } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -41,10 +41,11 @@ export class DataStoreService {
     });
 
     // Fetch Attendance
-    this.attSvc.getHistory(empId).pipe(
-      catchError(() => of([]))
-    ).subscribe(res => {
-      const records = res.map(s => this.attSvc.toRecord(s));
+    combineLatest([
+      this.attSvc.getHistory(empId).pipe(catchError(() => of([]))),
+      this.attSvc.getWorkingHours().pipe(catchError(() => of([])))
+    ]).subscribe(([res, rules]) => {
+      const records = res.map(s => this.attSvc.toRecord(s, rules));
       const fullHistory = this.attSvc.fillMissingDays(records, this.user()?.joined);
       this.attendanceHistory.set(fullHistory);
       this.isLoading.set(false);
