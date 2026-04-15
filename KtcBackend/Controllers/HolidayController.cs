@@ -1,6 +1,7 @@
 using KtcBackend;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using System;
 
 namespace KtcBackend.Controllers
 {
@@ -13,154 +14,101 @@ namespace KtcBackend.Controllers
         private readonly KtcContext _db;
         public HolidayController(KtcContext db) => _db = db;
 
-        private void UpdateOverallStatus(HolidayRequest req)
+        private HolidayRequest MapToDto(VacTrn v)
         {
-            if (req.ManagerStatus == "rejected" || req.GMStatus == "rejected")
+            var emp = _db.Employees.FirstOrDefault(e => e.Id == v.EmplNo);
+            var statusStr = v.SysDocStatus switch 
             {
-                req.Status = "rejected";
-                return;
-            }
+                1 => "pending",
+                2 => "approved",
+                3 => "rejected",
+                _ => "pending"
+            };
 
-            var requester = _db.Employees.Find(req.EmpId);
-            var requesterPosition = (requester?.Position ?? string.Empty).Trim().ToLowerInvariant();
-            var isManagerRequest = requesterPosition == "manager";
-
-            // Correct hierarchy:
-            // - Employee requests: manager approval only
-            // - Manager requests: GM approval only
-            req.Status = isManagerRequest
-                ? (req.GMStatus == "approved" ? "approved" : "pending")
-                : (req.ManagerStatus == "approved" ? "approved" : "pending");
+            return new HolidayRequest
+            {
+                RequestId = v.VacDocNo,
+                EmpId = v.EmplNo,
+                EmpName = emp?.Name ?? "Unknown",
+                StartDate = v.VacStartDate ?? DateTime.UtcNow,
+                endDate = v.VacEndDate ?? DateTime.UtcNow,
+                Days = (int)(v.VacDays ?? 0),
+                Reason = v.VacNote ?? "",
+                Status = statusStr,
+                ManagerStatus = statusStr, // Simplified for VacTrn mapping
+                GMStatus = statusStr,
+                ManagerId = "",
+                GMId = "",
+                SubmittedAt = v.VacStartDateOriginal ?? DateTime.UtcNow
+            };
         }
 
         [HttpGet("{empId}")]
         public IActionResult Get(string empId)
-            => Ok(_db.HolidayRequests.Where(h => h.EmpId == empId));
+            => Ok(_db.VacTransactions.Where(v => v.EmplNo == empId).ToList().Select(v => MapToDto(v)));
 
         // admin: all requests
         [HttpGet]
         public IActionResult GetAll()
-            => Ok(_db.HolidayRequests);
+            => Ok(_db.VacTransactions.ToList().Select(v => MapToDto(v)));
 
         [HttpGet("pending")]
         public IActionResult GetPending([FromQuery] string? role)
         {
-            var requests = _db.HolidayRequests.AsQueryable();
+            var requests = _db.VacTransactions.AsQueryable();
 
             var normalizedRole = (role ?? string.Empty).Trim().ToLowerInvariant();
 
             if (normalizedRole == "manager")
             {
-                // Managers see requests from regular employees (not managers or GMs)
                 var employeeIds = _db.Employees
                     .Where(e => e.Position.ToLower() != "manager" && e.Position.ToLower() != "general manager")
                     .Select(e => e.Id);
 
-                requests = requests.Where(r => employeeIds.Contains(r.EmpId) && r.ManagerStatus == "pending");
+                // Assuming SysDocStatus = 1 is pending
+                requests = requests.Where(r => employeeIds.Contains(r.EmplNo) && r.SysDocStatus == 1);
             }
             else if (normalizedRole == "admin")
             {
-                // General manager sees manager requests only, pending GM approval.
                 var managerIds = _db.Employees
                     .Where(e => e.Position.ToLower() == "manager")
                     .Select(e => e.Id);
 
-                requests = requests.Where(r => managerIds.Contains(r.EmpId) && r.GMStatus == "pending");
+                requests = requests.Where(r => managerIds.Contains(r.EmplNo) && r.SysDocStatus == 1);
             }
             else
             {
-                requests = requests.Where(h => h.Status == "pending");
+                requests = requests.Where(r => r.SysDocStatus == 1);
             }
 
-            return Ok(requests);
+            return Ok(requests.ToList().Select(v => MapToDto(v)));
         }
 
         // admin actions
         [HttpPost("approve/{id}")]
         public IActionResult Approve(int id, [FromBody] ApprovalInput input)
         {
-            var req = _db.HolidayRequests.Find(id);
-            if (req == null) return NotFound();
+            var vac = _db.VacTransactions.Find(id);
+            if (vac == null) return NotFound();
 
-            var approverRole = (input.ApproverRole ?? string.Empty).Trim().ToLowerInvariant();
-
-            if (approverRole == "manager")
-            {
-                if (req.ManagerStatus != "pending")
-                    return BadRequest("Request is not pending manager approval.");
-
-                req.ManagerStatus = "approved";
-                req.ManagerId = input.ApproverId;
-            }
-            else if (approverRole == "admin")
-            {
-                // GM should only approve manager requests.
-                var requester = _db.Employees.Find(req.EmpId);
-                var requesterPosition = (requester?.Position ?? string.Empty).Trim().ToLowerInvariant();
-                if (requesterPosition != "manager")
-                    return BadRequest("General manager can only approve manager requests.");
-
-                req.GMStatus = "approved";
-                req.GMId = input.ApproverId;
-            }
-            else if (approverRole == "system_admin")
-            {
-                req.ManagerStatus = "approved";
-                req.GMStatus = "approved";
-                req.ManagerId = input.ApproverId;
-                req.GMId = input.ApproverId;
-            }
-            else
-            {
-                return BadRequest("Invalid approver role");
-            }
-
-            UpdateOverallStatus(req);
+            // Set state to approved map
+            vac.SysDocStatus = 2; // 2 = Approved
             _db.SaveChanges();
-            return Ok(req);
+            
+            return Ok(MapToDto(vac));
         }
 
         [HttpPost("reject/{id}")]
         public IActionResult Reject(int id, [FromBody] ApprovalInput input)
         {
-            var req = _db.HolidayRequests.Find(id);
-            if (req == null) return NotFound();
+            var vac = _db.VacTransactions.Find(id);
+            if (vac == null) return NotFound();
 
-            var approverRole = (input.ApproverRole ?? string.Empty).Trim().ToLowerInvariant();
-
-            if (approverRole == "manager")
-            {
-                if (req.ManagerStatus != "pending")
-                    return BadRequest("Request is not pending manager approval.");
-
-                req.ManagerStatus = "rejected";
-                req.ManagerId = input.ApproverId;
-            }
-            else if (approverRole == "admin")
-            {
-                var requester = _db.Employees.Find(req.EmpId);
-                var requesterPosition = (requester?.Position ?? string.Empty).Trim().ToLowerInvariant();
-                if (requesterPosition != "manager")
-                    return BadRequest("General manager can only reject manager requests.");
-
-                req.GMStatus = "rejected";
-                req.GMId = input.ApproverId;
-            }
-            else if (approverRole == "system_admin")
-            {
-                req.ManagerStatus = "rejected";
-                req.GMStatus = "rejected";
-                req.ManagerId = input.ApproverId;
-                req.GMId = input.ApproverId;
-            }
-            else
-            {
-                return BadRequest("Invalid approver role");
-            }
-
-            UpdateOverallStatus(req);
+            // set state to rejected
+            vac.SysDocStatus = 3; // 3 = Rejected
             _db.SaveChanges();
-            return Ok(req);
+
+            return Ok(MapToDto(vac));
         }
 
         [HttpPost]
@@ -174,27 +122,26 @@ namespace KtcBackend.Controllers
             if (requesterPosition == "general manager")
                 return BadRequest("General manager cannot create holiday requests");
 
-            if (requesterPosition == "manager")
+            var vac = new VacTrn
             {
-                req.ManagerStatus = "approved";
-                req.ManagerId = string.IsNullOrWhiteSpace(req.ManagerId) ? req.EmpId : req.ManagerId;
-                req.GMStatus = "pending";
-                req.GMId =  "";
-            }
-            else
-            {
-                req.ManagerStatus = "pending";
-                 req.ManagerId = req.ManagerId ?? "";
-                // Employee requests do not require GM approval.
-                req.GMStatus = "approved";
-                req.GMId = "";
-            }
+                CompCode = "01",
+                BranCode = "01",
+                DeptCode = "02",
+                EmplNo = req.EmpId,
+                VacStartDate = req.StartDate,
+                VacStartDateOriginal = DateTime.UtcNow,
+                VacEndDate = req.endDate,
+                VacDays = req.Days,
+                VacStartYear = req.StartDate.Year,
+                VacStartMonth = req.StartDate.Month,
+                VacNote = req.Reason ?? "",
+                SysDocStatus = 1 // 1 = pending
+            };
 
-            UpdateOverallStatus(req);
-            req.SubmittedAt = DateTime.UtcNow;
-            _db.HolidayRequests.Add(req);
+            _db.VacTransactions.Add(vac);
             _db.SaveChanges();
-            return CreatedAtAction(nameof(Get), new { empId = req.EmpId }, req);
+
+            return CreatedAtAction(nameof(Get), new { empId = vac.EmplNo }, MapToDto(vac));
         }
     }
 }

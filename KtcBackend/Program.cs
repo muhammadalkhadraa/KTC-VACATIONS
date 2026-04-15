@@ -1,19 +1,15 @@
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 using KtcBackend;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Enable legacy timestamp behavior to allow non-UTC DateTimes to be saved to 'timestamp with time zone' column
-AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // <-- register database context ------------------------------------------------
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<KtcContext>(options =>
 {
-    options.UseNpgsql(connectionString, x => x.MigrationsHistoryTable("__ef_migrations_history")
-                                              .CommandTimeout(120))
-           .UseSnakeCaseNamingConvention();
+    options.UseSqlServer(connectionString, x => x.MigrationsHistoryTable("__ef_migrations_history")
+                                              .CommandTimeout(120));
 });
 // -----------------------------------------------------------------------------
 
