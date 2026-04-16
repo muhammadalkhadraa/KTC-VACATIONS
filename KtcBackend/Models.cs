@@ -14,28 +14,37 @@ namespace KtcBackend
         public DbSet<CheckInStatus> CheckInStatuses { get; set; }
         public DbSet<VacTrn> VacTransactions { get; set; }
         public DbSet<HolidayRequest> HolidayRequests { get; set; }
+        public DbSet<PrsMst> PersonnelMaster { get; set; }
+        public DbSet<WorkingHoursRule> WorkingHours { get; set; }
         
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Employee>().ToTable("employees");
             modelBuilder.Entity<Role>().ToTable("roles");
-            modelBuilder.Entity<CheckInStatus>().ToTable("check_ins");
+            modelBuilder.Entity<CheckInStatus>().ToTable("CheckIns");
+            modelBuilder.Entity<WorkingHoursRule>().ToTable("WorkingHours");
             modelBuilder.Entity<HolidayRequest>().ToTable("holiday_requests");
-            modelBuilder.Entity<VacTrn>().ToTable("VAC_TRN", "dbo").HasKey(v => v.VacDocNo);
+            modelBuilder.Entity<VacTrn>().ToTable("VAC_TRN", "dbo")
+                .HasKey(v => new { v.CompCode, v.BranCode, v.EmplNo, v.DeptCode, v.VacStartDate });
+            modelBuilder.Entity<PrsMst>().ToTable("PRS_MST", "dbo").HasKey(p => p.EmplNo);
         }
     }
 
     public class Employee
     {
-        [Column("id"), Key] public string Id { get; set; } = null!;
-        [Column("name")] public string Name { get; set; } = null!;
-        [Column("password")] public string Password { get; set; } = null!;
-        [Column("role")] public string Role { get; set; } = null!;
-        [Column("position")] public string Position { get; set; } = null!;
-        [Column("department")] public string Department { get; set; } = null!;
-        [Column("joined")] public DateTime Joined { get; set; }
-        [Column("used_holidays")] public int UsedHolidays { get; set; }
-        [Column("total_holidays")] public int TotalHolidays { get; set; }
+        [Key] public string Id { get; set; } = null!;
+        public string Name { get; set; } = null!;
+        public string Password { get; set; } = null!;
+        public string Role { get; set; } = null!;
+        public string Position { get; set; } = null!;
+        public string Department { get; set; } = null!;
+        public DateTime Joined { get; set; }
+        public double UsedHolidays { get; set; }
+        public double TotalHolidays { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public DateTime? InsuranceStartDate { get; set; }
+        public double? InitialBalance { get; set; }
+        public bool? IsInitialBalanceSet { get; set; }
     }
 
     public class Role
@@ -46,52 +55,82 @@ namespace KtcBackend
 
     public class CheckInStatus
     {
-        [Column("id"), Key] public int Id { get; set; }
-        [Column("emp_id")] public string EmpId { get; set; } = null!;
-        [Column("check_in_time")] public DateTime? CheckInTime { get; set; }
-        [Column("check_out_time")] public DateTime? CheckOutTime { get; set; }
-        [Column("state")] public string State { get; set; } = null!;
+        [Key] public int Id { get; set; }
+        public string EmpId { get; set; } = null!;
+        public DateTime? CheckInTime { get; set; }
+        public DateTime? CheckOutTime { get; set; }
+        public string State { get; set; } = null!;
+    }
+
+    public class WorkingHoursRule
+    {
+        [Key] public int Id { get; set; }
+        public DateTime StartDate { get; set; }
+        public DateTime? EndDate { get; set; }
+        public TimeSpan CheckInTime { get; set; }
+        public TimeSpan CheckOutTime { get; set; }
     }
 
     public class HolidayRequest
     {
         [Column("request_id"), Key] public int RequestId { get; set; }
         [Column("emp_id")] public string EmpId { get; set; }
-        [Column("emp_name")] public string EmpName { get; set; }
-        [Column("start_date")] public DateTime StartDate { get; set; }
-        [Column("end_date")] public DateTime endDate { get; set; }
-        [Column("days")] public int Days { get; set; }
-        [Column("reason")] public string Reason { get; set; }
-        [Column("status")] public string Status { get; set; }
-        [Column("manager_status")] public string ManagerStatus { get; set; }
-        [Column("manager_id")] public string ManagerId { get; set; }
-        [Column("gm_status")] public string GMStatus { get; set; }
-        [Column("gm_id")] public string GMId { get; set; }
-        [Column("submitted_at")] public DateTime SubmittedAt { get; set; }
+        [Column("emp_name")] public string emp_name { get; set; }
+        [Column("start_date")] public DateTime startDate { get; set; }
+        [Column("end_date")] public DateTime end_date { get; set; }
+        [Column("days")] public double days { get; set; }
+        [Column("reason")] public string reason { get; set; }
+        [Column("status")] public string status { get; set; }
+        [Column("manager_status")] public string manager_status { get; set; }
+        [Column("manager_id")] public string manager_id { get; set; }
+        [Column("gm_status")] public string gm_status { get; set; }
+        [Column("gm_id")] public string gm_id { get; set; }
+        [Column("submitted_at")] public DateTime submittedAt { get; set; }
     }
 
     [Table("VAC_TRN", Schema = "dbo")]
     public class VacTrn
     {
-        [Key, Column("VAC_DOC_NO")] public int VacDocNo { get; set; }
+        [Column("VAC_DOC_NO")] public int? VacDocNo { get; set; }
         [Column("COMP_CODE")] public string CompCode { get; set; } = "01";
         [Column("BRAN_CODE")] public string BranCode { get; set; } = "01";
         [Column("DEPT_CODE")] public string DeptCode { get; set; } = "02";
         [Column("EMPL_NO")] public string EmplNo { get; set; } = null!;
         
-        [Column("VAC_START_DATE")] public DateTime? VacStartDate { get; set; }
+        [Column("VAC_START_DATE")] public DateTime VacStartDate { get; set; }
         [Column("VAC_START_DATE_ORIGINAL")] public DateTime? VacStartDateOriginal { get; set; }
-        [Column("VAC_END_DATE")] public DateTime? VacEndDate { get; set; }
+        [Column("VAC_END_DATE")] public DateTime VacEndDate { get; set; }
         
-        [Column("VAC_START_YEAR")] public int? VacStartYear { get; set; }
-        [Column("VAC_START_MONTH")] public int? VacStartMonth { get; set; }
+        [Column("VAC_START_YEAR")] public string? VacStartYear { get; set; }
+        [Column("VAC_START_MONTH")] public string? VacStartMonth { get; set; }
         
-        [Column("VAC_DAYS")] public decimal? VacDays { get; set; }
+        [Column("VAC_DAYS")] public double VacDays { get; set; }
         
-        [Column("VAC_CODE")] public string? VacCode { get; set; }
+        [Column("VAC_CODE")] public string VacCode { get; set; } = "01";
         [Column("VAC_TYPE")] public string? VacType { get; set; }
-        [Column("VAC_NOTE")] public string? VacNote { get; set; }
+        [Column("VAC_NOTE")] public string VacNote { get; set; } = "";
         
-        [Column("SYS_DOC_STATUS")] public int? SysDocStatus { get; set; }
+        [Column("SYS_DOC_STATUS")] public string? SysDocStatus { get; set; }
+
+        [Column("INS_DATETIME")] public DateTime InsDateTime { get; set; } = DateTime.Now;
+        [Column("A_ID")] public string? AId { get; set; }
+        [Column("A_DATE")] public DateTime ADate { get; set; } = DateTime.Now;
+        [Column("A_TIME")] public string? ATime { get; set; }
+        [Column("U_ID")] public string? UId { get; set; }
+        [Column("U_DATE")] public DateTime UDate { get; set; } = DateTime.Now;
+        [Column("U_TIME")] public string? UTime { get; set; }
+        
+        [Column("RSL")] public int Rsl { get; set; } = 1;
+        [Column("DW_SERIAL")] public int DwSerial { get; set; } = 0;
+    }
+
+    [Table("PRS_MST", Schema = "dbo")]
+    public class PrsMst
+    {
+        [Key, Column("EMPL_NO")] public string EmplNo { get; set; } = null!;
+        [Column("EMPL_ENAME")] public string? NameEnglish { get; set; }
+        [Column("BIRTH_DATE")] public DateTime? BirthDate { get; set; }
+        [Column("INSUR_DATE")] public DateTime? InsuranceDate { get; set; }
+        [Column("START_DATE")] public DateTime? StartDate { get; set; }
     }
 }

@@ -1,29 +1,24 @@
-import { Injectable } from '@angular/core';
-import { from, map, Observable } from 'rxjs';
-import { SupabaseService } from './supabase.service';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, catchError, of } from 'rxjs';
 import { Role } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class RoleService {
-  constructor(private supabaseSvc: SupabaseService) {}
-
-  private readonly SELECT_ALL = 'id, name';
+  private http = inject(HttpClient);
+  private readonly API_URL = 'http://localhost:5000/api/role';
 
   getAll(): Observable<Role[]> {
-    return from(this.supabaseSvc.supabase.from('roles').select(this.SELECT_ALL)).pipe(
-      map(({ data }) => (data as unknown as Role[]) || [])
+    return this.http.get<Role[]>(this.API_URL).pipe(
+      catchError(() => of([]))
     );
   }
 
   create(name: string): Observable<Role> {
-    return from(this.supabaseSvc.supabase.from('roles').insert([{ name }]).select(this.SELECT_ALL).single()).pipe(
-      map(({ data }) => data as unknown as Role)
-    );
+    return this.http.post<Role>(this.API_URL, { name });
   }
 
   delete(id: number): Observable<void> {
-    return from(this.supabaseSvc.supabase.from('roles').delete().eq('id', id)).pipe(
-      map(() => void 0)
-    );
+    return this.http.delete<void>(`${this.API_URL}/${id}`);
   }
 }

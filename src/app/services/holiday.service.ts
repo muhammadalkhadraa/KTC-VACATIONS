@@ -15,7 +15,21 @@ export class HolidayService {
   }
 
   submit(req: Partial<HolidayRequest>): Observable<HolidayRequest> {
-     return this.http.post<HolidayRequest>(this.apiUrl, req);
+     const payload = {
+       empId: req.empId,
+       emp_name: req.emp_name || req.empId,
+       startDate: req.startDate || new Date().toISOString(),
+       end_date: req.end_date || new Date().toISOString(),
+       days: req.days || 1,
+       reason: req.reason || '',
+       status: 'pending',
+       manager_status: 'pending',
+       manager_id: '',
+       gm_status: 'pending',
+       gm_id: '',
+       submittedAt: new Date().toISOString()
+     };
+     return this.http.post<HolidayRequest>(this.apiUrl, payload);
   }
 
   getAll(): Observable<HolidayRequest[]> {

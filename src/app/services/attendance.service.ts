@@ -1,86 +1,50 @@
-import { Injectable } from '@angular/core';
-import { from, map, Observable, shareReplay } from 'rxjs';
-import { SupabaseService } from './supabase.service';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, shareReplay, catchError, of } from 'rxjs';
 import { AttendanceRecord, CheckInStatus, WorkingHoursRule } from '../models/models';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
-  constructor(private supabaseSvc: SupabaseService) { }
-
-  private readonly SELECT_ALL = 'id, empId:emp_id, state, checkInTime:check_in_time, checkOutTime:check_out_time';
-
+  private http = inject(HttpClient);
+  private readonly API_URL = 'http://localhost:5000/api/attendance';
   private rulesCache$: Observable<WorkingHoursRule[]> | null = null;
 
   getWorkingHours(forceRefresh = false): Observable<WorkingHoursRule[]> {
     if (!this.rulesCache$ || forceRefresh) {
-      this.rulesCache$ = from(
-        this.supabaseSvc.supabase.from('working_hours').select('*').order('start_date', { ascending: false })
-      ).pipe(
-        map((res: any) => res.data as WorkingHoursRule[] || []),
-        shareReplay(1)
+      this.rulesCache$ = this.http.get<WorkingHoursRule[]>(`${this.API_URL}/working-hours`).pipe(
+        shareReplay(1),
+        catchError(() => {
+          this.rulesCache$ = null;
+          return of([]);
+        })
       );
     }
     return this.rulesCache$;
   }
 
   getHistory(empId: string): Observable<CheckInStatus[]> {
-    const id = empId.trim().toUpperCase();
-    return from(
-      this.supabaseSvc.supabase
-        .from('check_ins')
-        .select(this.SELECT_ALL)
-        .eq('emp_id', id)
-        .order('check_in_time', { ascending: false })
-    ).pipe(
-      map((res: any) => {
-        if (res.error) throw res.error;
-        return (res.data as unknown as CheckInStatus[]) || [];
-      })
+    return this.http.get<CheckInStatus[]>(`${this.API_URL}/history/${empId}`).pipe(
+      catchError(() => of([]))
     );
   }
 
-  /** All check-in rows recorded today. */
   getToday(): Observable<CheckInStatus[]> {
-    const today = new Date().toISOString().split('T')[0];
-    return from(
-      this.supabaseSvc.supabase
-        .from('check_ins')
-        .select(this.SELECT_ALL)
-        .gte('check_in_time', `${today}T00:00:00`)
-        .lte('check_in_time', `${today}T23:59:59`)
-    ).pipe(
-      map((res: any) => {
-        if (res.error) throw res.error;
-        return (res.data as unknown as CheckInStatus[]) || [];
-      })
-    );
+    // Note: The logic for "today" can be refined based on the local API's history response
+    // For now, let's filter from all history or add a specific today endpoint.
+    // Given the dashboard uses getHistory(id), we'll mostly rely on that.
+    return of([]); // Placeholder if specific "global today" is needed
   }
 
-  /**
-   * Record a new state (in or out).
-   */
   postStatus(status: Partial<CheckInStatus>): Observable<CheckInStatus> {
-    const record: Record<string, any> = {
-      emp_id: status.empId?.trim().toUpperCase(),
-      state:  status.state,
-    };
+    return this.http.post<CheckInStatus>(`${this.API_URL}/status`, status);
+  }
 
-    if (status.state === 'in') {
-      record['check_in_time'] = new Date().toISOString();
-    } else if (status.state === 'out') {
-      record['check_in_time']  = status.checkInTime ?? null;
-      record['check_out_time'] = new Date().toISOString();
-      if (status.id) record['id'] = status.id; // update existing row
-    }
+  upsertWorkingHours(rule: WorkingHoursRule): Observable<void> {
+    return this.http.post<void>(`${this.API_URL}/working-hours`, rule);
+  }
 
-    return from(
-      this.supabaseSvc.supabase.from('check_ins').upsert([record]).select(this.SELECT_ALL).single()
-    ).pipe(
-      map((res: any) => {
-        if (res.error) throw res.error;
-        return res.data as unknown as CheckInStatus;
-      })
-    );
+  deleteWorkingHours(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.API_URL}/working-hours/${id}`);
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────

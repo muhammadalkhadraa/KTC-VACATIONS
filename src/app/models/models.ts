@@ -12,6 +12,10 @@ export interface Employee {
   usedHolidays: number;
   password: string;
   role: string;
+  dateOfBirth?: string;
+  insuranceStartDate?: string;
+  initialBalance?: number;
+  isInitialBalanceSet?: boolean;
 }
 
 export interface RegisterRequest {
@@ -33,9 +37,9 @@ export interface AttendanceRecord {
 }
 
 export interface WorkingHoursRule {
-  id: number;
+  id?: number;
   start_date: string;
-  end_date: string | null;
+  end_date?: string | null;
   check_in_time: string;
   check_out_time: string;
 }

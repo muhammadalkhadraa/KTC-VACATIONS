@@ -60,6 +60,9 @@ export class DataStoreService {
 
   refresh() {
     const u = this.user();
-    if (u) this.fetchAll(u.id);
+    if (u) {
+      this.fetchAll(u.id);
+      this.auth.refreshCurrentUser(u.id);
+    }
   }
 }
